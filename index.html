@@ -3,110 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вишлист</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Вишлист — активные и исполненные</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* все стили как в предыдущем варианте (полные, но для краткости я их не повторяю, вы возьмите свои готовые стили из последней версии) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: linear-gradient(145deg, #f4f7fc 0%, #e9eef4 100%); font-family: 'Inter', sans-serif; padding: 2rem; }
+        body { background: linear-gradient(145deg, #f4f7fc 0%, #e9eef4 100%); font-family: 'Inter', sans-serif; color: #1a2c3e; padding: 2rem 1.5rem; }
         .container { max-width: 1300px; margin: 0 auto; }
-        h1 { text-align: center; font-size: 2.5rem; background: linear-gradient(135deg, #c44569, #6a4e9b); background-clip: text; -webkit-background-clip: text; color: transparent; margin-bottom: 0.5rem; }
-        .sub { text-align: center; color: #4a627a; margin-bottom: 2rem; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
-        .card { background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.08); transition: 0.2s; position: relative; }
-        .card:hover { transform: translateY(-6px); }
-        .card.completed { opacity: 0.7; background: #ecf1f7; }
-        .card.completed .title, .card.completed .desc, .card.completed .price { text-decoration: line-through; }
-        .card.completed .buy-btn { background: #7f8c8d; pointer-events: none; }
+        h1 { text-align: center; font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #c44569, #6a4e9b); background-clip: text; -webkit-background-clip: text; color: transparent; margin-bottom: 0.3rem; }
+        .sub { text-align: center; color: #4a627a; margin-bottom: 2rem; border-bottom: 2px dashed #cddae9; display: inline-block; width: auto; margin-left: auto; margin-right: auto; padding-bottom: 8px; }
+        .tabs { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; }
+        .tab-btn { background: rgba(255,255,255,0.7); backdrop-filter: blur(4px); border: 1px solid #cddae9; padding: 0.7rem 2rem; border-radius: 60px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.2s; color: #2c3e66; }
+        .tab-btn.active { background: #2c3e66; color: white; border-color: #2c3e66; box-shadow: 0 4px 12px rgba(44,62,102,0.2); }
+        .wishlist-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+        .card { background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; position: relative; }
+        .card:hover { transform: translateY(-6px); box-shadow: 0 20px 32px rgba(0,0,0,0.12); }
+        .card.completed { opacity: 0.85; background: #ecf1f7; filter: grayscale(0.05); }
+        .card.completed .card-title, .card.completed .card-desc, .card.completed .price { text-decoration: line-through; }
+        .card.completed .buy-link { background: #7f8c8d; pointer-events: none; opacity: 0.6; }
+        .completed-badge { display: none; font-size: 0.75rem; background: #2a7f2e; color: white; padding: 4px 10px; border-radius: 40px; width: fit-content; margin-top: 8px; align-items: center; gap: 5px; }
+        .card.completed .completed-badge { display: inline-flex; }
+        .complete-checkbox { position: absolute; top: 16px; right: 16px; z-index: 10; background: rgba(255,255,240,0.9); backdrop-filter: blur(4px); padding: 5px 8px; border-radius: 60px; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; cursor: pointer; border: 1px solid #d4deec; }
         .card-img { width: 100%; height: 200px; object-fit: cover; background: #eef2f7; }
-        .card-content { padding: 1.2rem; }
-        .title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .desc { font-size: 0.9rem; color: #4a5c70; margin-bottom: 1rem; }
-        .price { font-weight: 700; font-size: 1.2rem; color: #2c3e66; margin: 0.5rem 0; border-top: 1px solid #edf2f7; padding-top: 0.7rem; }
-        .buy-btn { display: block; background: #2c3e66; color: white; text-align: center; padding: 10px; border-radius: 40px; text-decoration: none; font-weight: 600; margin-top: 1rem; }
-        .checkbox-wrapper { position: absolute; top: 12px; right: 12px; background: rgba(255,255,240,0.95); padding: 5px 10px; border-radius: 40px; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; z-index: 2; border: 1px solid #d4deec; }
-        .footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: #5f738c; }
-        .loading { text-align: center; padding: 2rem; }
+        .no-image { background: #e2e8f0; height: 200px; display: flex; align-items: center; justify-content: center; color: #5a6e8a; font-size: 0.9rem; }
+        .card-content { padding: 1.4rem 1.2rem 1.5rem; flex: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; color: #1f2f41; }
+        .card-desc { font-size: 0.9rem; color: #4a5c70; line-height: 1.45; margin-bottom: 1rem; }
+        .price { font-weight: 700; font-size: 1.2rem; color: #2c3e66; margin: 0.5rem 0 0.7rem; border-top: 1px solid #edf2f7; padding-top: 0.7rem; }
+        .buy-link { background: #2c3e66; color: white; text-decoration: none; padding: 10px 16px; border-radius: 40px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; margin-top: auto; }
+        .buy-link:hover { background: #1b2a4a; }
+        .footer-note { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: #5f738c; background: #ffffffc9; width: fit-content; margin-left: auto; margin-right: auto; padding: 0.6rem 1.2rem; border-radius: 40px; }
+        .loading { text-align: center; padding: 2rem; font-size: 1.2rem; color: #5a6e8a; }
+        .empty-message { text-align: center; padding: 2rem; color: #6c7f94; font-size: 1rem; background: rgba(255,255,255,0.5); border-radius: 40px; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>✨ Список желаний ✨</h1>
-    <div class="sub">✔️ отмечайте исполненные — изменения увидят все</div>
-    <div class="grid" id="grid"><div class="loading">⏳ Загрузка...</div></div>
-    <div class="footer">📌 Добавляйте новые позиции в Google Таблицу — они появятся здесь автоматически.</div>
+    <div class="sub">✔️ отмечайте исполненные — они переместятся в отдельный раздел</div>
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="active">📌 Активные</button>
+        <button class="tab-btn" data-tab="completed">✅ Исполненные</button>
+    </div>
+    <div id="activeGrid" class="wishlist-grid"><div class="loading">⏳ Загрузка...</div></div>
+    <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading">⏳ Загрузка...</div></div>
+    <div class="footer-note">📌 Добавляйте новые позиции в Google Таблицу — они появятся здесь автоматически.</div>
 </div>
-<script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycby0VeRLQUlcu6Saenx9WJVV4v4d43GCpxRUjIwk_VFIQu8Ky6E7Hh4T8g9bvcp9DJW8/exec';
 
-    async function load() {
-        const grid = document.getElementById('grid');
-        try {
-            const resp = await fetch(API_URL);
-            if (!resp.ok) throw new Error('Ошибка сети');
-            const items = await resp.json();
-            if (!items.length) {
-                grid.innerHTML = '<div class="loading">📭 Пока нет хотелок. Добавьте первую в Google Таблицу.</div>';
-                return;
-            }
-            grid.innerHTML = '';
-            for (let item of items) {
-                const card = document.createElement('div');
-                card.className = 'card';
-                const completed = (item.completed === 'TRUE' || item.completed === true);
-                if (completed) card.classList.add('completed');
-                
-                const imgSrc = item.imageUrl || '';
-                const imgHtml = imgSrc ? `<img class="card-img" src="${imgSrc}" onerror="this.src='https://placehold.co/400x200?text=Фото+не+загрузилось'">` : '<div class="card-img" style="display:flex; align-items:center; justify-content:center; background:#e2e8f0;">📷 нет фото</div>';
-                
-                card.innerHTML = `
-                    <div class="checkbox-wrapper">
-                        <input type="checkbox" class="complete-chk" data-id="${item.id}" ${completed ? 'checked' : ''}>
-                        <span>Исполнено</span>
-                    </div>
-                    ${imgHtml}
-                    <div class="card-content">
-                        <div class="title">${escape(item.title)}</div>
-                        <div class="desc">${escape(item.description || '')}</div>
-                        <div class="price">💰 ${escape(String(item.price))}</div>
-                        <a href="${escape(item.shopLink)}" target="_blank" rel="noopener noreferrer" class="buy-btn">🛒 ${escape(item.buttonText || 'Купить')}</a>
-                    </div>
-                `;
-                grid.appendChild(card);
-            }
-            // навесить обработчики после вставки
-            document.querySelectorAll('.complete-chk').forEach(chk => {
-                chk.addEventListener('change', async (e) => {
-                    const id = parseInt(chk.dataset.id);
-                    const newCompleted = chk.checked ? 'TRUE' : 'FALSE';
-                    try {
-                        const response = await fetch(API_URL, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ id, completed: newCompleted })
-                        });
-                        const result = await response.json();
-                        if (result.success === true) {
-                            // обновить внешний вид карточки
-                            const card = chk.closest('.card');
-                            if (chk.checked) card.classList.add('completed');
-                            else card.classList.remove('completed');
-                        } else {
-                            throw new Error('Сервер вернул ошибку');
-                        }
-                    } catch (err) {
-                        console.error(err);
-                        alert('Не удалось сохранить отметку. Проверьте интернет.');
-                        chk.checked = !chk.checked;
-                    }
-                });
-            });
-        } catch (err) {
-            console.error(err);
-            grid.innerHTML = '<div class="loading">❌ Ошибка загрузки. Проверьте URL скрипта.</div>';
-        }
+<script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxtnRITFeI4_uxn1NEOzkiALX5dLpjg6FvAOyWH8UCB7EKTh_gpqkDeS4xjbsJbSJIv/exec'; // Замените на ваш URL
+    let allItems = [];
+    let currentTab = 'active';
+
+    async function fetchData() {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const items = await response.json();
+        return items.map(item => ({
+            ...item,
+            completed: (item.completed === 'TRUE' || item.completed === true)
+        }));
     }
 
-    function escape(str) {
+    function renderGrids(items) {
+        const activeContainer = document.getElementById('activeGrid');
+        const completedContainer = document.getElementById('completedGrid');
+        const activeItems = items.filter(item => !item.completed);
+        const completedItems = items.filter(item => item.completed);
+        
+        activeContainer.innerHTML = activeItems.length === 0 ? '<div class="empty-message">📭 Пока нет активных желаний.</div>' : '';
+        completedContainer.innerHTML = completedItems.length === 0 ? '<div class="empty-message">🎉 Здесь будут отображаться исполненные желания.</div>' : '';
+        
+        activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
+        completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
+    }
+    
+    function createCardElement(item) {
+        const card = document.createElement('div');
+        card.className = 'card';
+        if (item.completed) card.classList.add('completed');
+        
+        let imgHtml = '';
+        if (item.imageUrl && item.imageUrl.trim()) {
+            imgHtml = `<img class="card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.onerror=null;this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
+            imgHtml += `<div class="no-image" style="display: none;">🖼️ Картинка не загружена</div>`;
+        } else {
+            imgHtml = `<div class="no-image">🖼️ Своя картинка (вставьте URL)</div>`;
+        }
+        
+        const badge = `<div class="completed-badge"><span>✅</span> Исполнено!</div>`;
+        const contentHtml = `
+            <div class="card-content">
+                <h3 class="card-title">${escapeHtml(item.title)}</h3>
+                <p class="card-desc">${escapeHtml(item.description || '')}</p>
+                <div class="price">💰 ${escapeHtml(String(item.price))}</div>
+                ${badge}
+                <a href="${escapeHtml(item.shopLink)}" class="buy-link" target="_blank" rel="noopener noreferrer">
+                    🛒 ${escapeHtml(item.buttonText || 'Купить')}
+                </a>
+            </div>
+        `;
+        card.innerHTML = imgHtml + contentHtml;
+        
+        const chkDiv = document.createElement('div');
+        chkDiv.className = 'complete-checkbox';
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = item.completed;
+        chk.addEventListener('change', async (e) => {
+            e.stopPropagation();
+            const newCompleted = chk.checked ? 'TRUE' : 'FALSE';
+            try {
+                const resp = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: item.id, completed: newCompleted })
+                });
+                const text = await resp.text();
+                console.log('Ответ сервера:', text);
+                let result;
+                try { result = JSON.parse(text); } catch(e) { throw new Error('Ответ не JSON: ' + text); }
+                if (result.success === true) {
+                    await loadAndRender();
+                } else {
+                    throw new Error(result.error || 'Неизвестная ошибка');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Ошибка: ' + err.message);
+                chk.checked = !chk.checked;
+            }
+        });
+        chkDiv.appendChild(chk);
+        chkDiv.appendChild(document.createTextNode(' Исполнено'));
+        card.appendChild(chkDiv);
+        return card;
+    }
+    
+    async function loadAndRender() {
+        try {
+            allItems = await fetchData();
+            renderGrids(allItems);
+            document.querySelectorAll('.wishlist-grid').forEach(grid => grid.style.display = 'none');
+            if (currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
+            else document.getElementById('completedGrid').style.display = 'grid';
+        } catch (err) {
+            console.error(err);
+            document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки данных. Проверьте URL скрипта.</div>';
+        }
+    }
+    
+    function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
@@ -115,9 +162,20 @@
             return m;
         });
     }
-
-    load();
-    setInterval(load, 15000);
+    
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentTab = btn.dataset.tab;
+            document.querySelectorAll('.wishlist-grid').forEach(grid => grid.style.display = 'none');
+            if (currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
+            else document.getElementById('completedGrid').style.display = 'grid';
+        });
+    });
+    
+    loadAndRender();
+    setInterval(loadAndRender, 15000);
 </script>
 </body>
 </html>
