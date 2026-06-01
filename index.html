@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вишлист — синхронизация</title>
+    <title>Вишлист — синхронизация (GET)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -51,7 +51,7 @@
 
 <script>
     // 👇 ВСТАВЬТЕ ВАШ URL ИЗ APPS SCRIPT (скопированный после публикации)
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxXzZqWZmdpGE9bMZiv-Cr1sK4OCbkY9q_NqJ41JqJGapUozzxFpp6-ubxbQgCHQF3J/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzq6J8alPSiusKLw1FER8x82TiWsY-c0tqHOlKCmEFm0U5UXv16kCNhnNpieTgO8pCp/exec';
     let allItems = [];
     let currentTab = 'active';
 
@@ -67,14 +67,9 @@
 
     async function saveCompleted(id, completed) {
         const value = completed ? 'TRUE' : 'FALSE';
-        // Используем mode: 'no-cors' для обхода CORS
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ id, completed: value })
-        });
-        // Не ждём ответа, просто перезагружаем данные через секунду
+        // Используем GET-запрос для обновления (без CORS)
+        const url = `${API_URL}?id=${id}&completed=${value}`;
+        await fetch(url);
         setTimeout(() => loadAndRender(), 500);
     }
 
@@ -135,10 +130,8 @@
         chk.addEventListener('change', async (e) => {
             e.stopPropagation();
             const newCompleted = chk.checked;
-            // Временно отключаем чекбокс, чтобы не было повторных кликов
             chk.disabled = true;
             await saveCompleted(item.id, newCompleted);
-            // Чекбокс включится после перерисовки
         });
         chkDiv.appendChild(chk);
         chkDiv.appendChild(document.createTextNode(' Исполнено'));
