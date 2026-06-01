@@ -39,15 +39,14 @@
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
-        /* Шапка с анимацией */
+        /* Шапка */
         .hero {
             text-align: center;
             margin-bottom: 3rem;
-            position: relative;
         }
         .hero h1 {
             font-size: 3rem;
@@ -67,7 +66,6 @@
             font-size: 2.8rem;
             color: #e9b35f;
             background: none;
-            -webkit-background-clip: unset;
         }
         .subhead {
             font-size: 1.1rem;
@@ -82,7 +80,7 @@
             margin-right: auto;
         }
 
-        /* Табы — стеклянные */
+        /* Табы */
         .tabs {
             display: flex;
             justify-content: center;
@@ -100,12 +98,10 @@
             cursor: pointer;
             transition: all 0.2s ease;
             color: #1e3a5f;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             font-family: inherit;
         }
         .tab-btn i {
             margin-right: 8px;
-            font-size: 1rem;
         }
         .tab-btn.active {
             background: #1e3a5f;
@@ -113,33 +109,43 @@
             border-color: #1e3a5f;
             box-shadow: 0 8px 20px rgba(30,58,95,0.25);
         }
-        .tab-btn:not(.active):hover {
-            background: rgba(255,255,240,0.9);
-            transform: translateY(-2px);
-        }
 
-        /* сетка карточек — 2 колонки на широких, 1 на узких */
+        /* Сетка — 3 колонки на широких экранах */
         .wishlist-grid {
             display: grid;
-            grid-template-columns: repeat(2, minmax(320px, 1fr));
+            grid-template-columns: repeat(3, minmax(280px, 1fr));
             gap: 2rem;
-            max-width: 1100px;
-            margin: 0 auto;
         }
 
-        @media (max-width: 700px) {
+        /* Адаптив */
+        @media (max-width: 1000px) {
+            .wishlist-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 640px) {
             .wishlist-grid {
                 grid-template-columns: 1fr;
             }
+            body {
+                padding: 1rem;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .tab-btn {
+                padding: 0.5rem 1.2rem;
+                font-size: 0.85rem;
+            }
         }
 
-        /* Карточка — элегантная */
+        /* Карточка */
         .card {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(2px);
             border-radius: 32px;
             overflow: hidden;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
             transition: all 0.35s cubic-bezier(0.2, 0, 0, 1);
             display: flex;
             flex-direction: column;
@@ -149,7 +155,6 @@
         .card:hover {
             transform: translateY(-8px) scale(1.01);
             box-shadow: 0 28px 40px -16px rgba(0, 0, 0, 0.25);
-            border-color: rgba(106, 78, 155, 0.2);
         }
         .card.completed {
             opacity: 0.75;
@@ -160,8 +165,6 @@
         .card.completed .card-desc,
         .card.completed .price {
             text-decoration: line-through;
-            text-decoration-thickness: 2px;
-            text-decoration-color: #2a6b2f;
         }
         .card.completed .buy-link {
             background: #7f8c8d;
@@ -184,7 +187,6 @@
             display: inline-flex;
         }
 
-        /* Чекбокс внутри карточки, не абсолютный */
         .checkbox-wrapper {
             display: flex;
             align-items: center;
@@ -192,7 +194,6 @@
             margin: 0.8rem 0 0.5rem;
             padding: 6px 0;
             border-top: 1px solid #e2edf7;
-            background: transparent;
             font-size: 0.85rem;
             font-weight: 500;
             cursor: pointer;
@@ -204,11 +205,7 @@
             cursor: pointer;
             accent-color: #1e3a5f;
         }
-        .checkbox-wrapper:hover {
-            opacity: 0.8;
-        }
 
-        /* картинка */
         .card-img {
             width: 100%;
             height: 210px;
@@ -225,7 +222,6 @@
             align-items: center;
             justify-content: center;
             color: #5a6e8a;
-            font-size: 0.9rem;
             gap: 8px;
         }
 
@@ -238,7 +234,6 @@
         .card-title {
             font-size: 1.45rem;
             font-weight: 700;
-            line-height: 1.3;
             margin-bottom: 0.5rem;
             color: #0e2a3b;
         }
@@ -259,7 +254,6 @@
         }
         .price i {
             color: #e9b35f;
-            font-size: 1rem;
         }
 
         .buy-link {
@@ -276,13 +270,10 @@
             gap: 10px;
             transition: all 0.2s;
             margin-top: 0.8rem;
-            border: none;
-            cursor: pointer;
         }
         .buy-link:hover {
             background: #0f2f4a;
             transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(31,72,112,0.25);
         }
 
         .footer-note {
@@ -307,48 +298,19 @@
             color: #5e7c9c;
             background: rgba(255,255,245,0.5);
             border-radius: 60px;
-            backdrop-filter: blur(4px);
         }
         .empty-message i {
             font-size: 2rem;
             display: block;
             margin-bottom: 12px;
-            opacity: 0.7;
-        }
-
-        /* плавное переключение вкладок */
-        .fade-transition {
-            transition: opacity 0.2s ease;
-        }
-
-        @media (max-width: 640px) {
-            body {
-                padding: 1rem;
-            }
-            .hero h1 {
-                font-size: 2rem;
-            }
-            .tab-btn {
-                padding: 0.5rem 1.2rem;
-                font-size: 0.85rem;
-            }
-            .card-title {
-                font-size: 1.25rem;
-            }
         }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="hero">
-        <h1>
-            <i class="fas fa-star-of-life"></i>
-            Список желаний
-            <i class="fas fa-gift"></i>
-        </h1>
-        <div class="subhead">
-            <i class="fas fa-check-circle"></i> отмечайте исполненное — оно перемещается в отдельный раздел
-        </div>
+        <h1><i class="fas fa-star-of-life"></i> Список желаний <i class="fas fa-gift"></i></h1>
+        <div class="subhead"><i class="fas fa-check-circle"></i> отмечайте исполненное — оно перемещается в отдельный раздел</div>
     </div>
 
     <div class="tabs">
@@ -359,21 +321,19 @@
     <div id="activeGrid" class="wishlist-grid"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
     <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
 
-    <div class="footer-note">
-        <i class="fas fa-database"></i> Данные из Google Таблицы • синхронизация в реальном времени
-    </div>
+    <div class="footer-note"><i class="fas fa-database"></i> Данные из Google Таблицы • синхронизация в реальном времени</div>
 </div>
 
 <script>
-    // ========== ВАШ URL APPS SCRIPT (ЗАМЕНИТЕ НА СВОЙ) ==========
+    // ⚠️ ЗАМЕНИТЕ НА ВАШ URL ИЗ APPS SCRIPT
     const API_URL = 'https://script.google.com/macros/s/AKfycbzq6J8alPSiusKLw1FER8x82TiWsY-c0tqHOlKCmEFm0U5UXv16kCNhnNpieTgO8pCp/exec';
     let allItems = [];
     let currentTab = 'active';
 
     async function fetchData() {
-        const response = await fetch(API_URL);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const items = await response.json();
+        const resp = await fetch(API_URL);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const items = await resp.json();
         return items.map(item => ({
             ...item,
             completed: (item.completed === 'TRUE' || item.completed === true)
@@ -394,8 +354,8 @@
     function renderGrids(items) {
         const activeContainer = document.getElementById('activeGrid');
         const completedContainer = document.getElementById('completedGrid');
-        const activeItems = items.filter(item => !item.completed);
-        const completedItems = items.filter(item => item.completed);
+        const activeItems = items.filter(i => !i.completed);
+        const completedItems = items.filter(i => i.completed);
         
         activeContainer.innerHTML = '';
         completedContainer.innerHTML = '';
@@ -403,17 +363,17 @@
         if (activeItems.length === 0) {
             activeContainer.innerHTML = '<div class="empty-message"><i class="fas fa-cloud-moon"></i>Пока нет активных желаний<br><small>добавьте в Google Таблицу</small></div>';
         } else {
-            activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
+            activeItems.forEach(item => activeContainer.appendChild(createCard(item)));
         }
         
         if (completedItems.length === 0) {
             completedContainer.innerHTML = '<div class="empty-message"><i class="fas fa-check-circle"></i>Здесь появятся исполненные мечты 🎉</div>';
         } else {
-            completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
+            completedItems.forEach(item => completedContainer.appendChild(createCard(item)));
         }
     }
     
-    function createCardElement(item) {
+    function createCard(item) {
         const card = document.createElement('div');
         card.className = 'card';
         if (item.completed) card.classList.add('completed');
@@ -426,17 +386,16 @@
             imgHtml = `<div class="no-image"><i class="fas fa-camera"></i> нет фото</div>`;
         }
         
-        const badge = `<div class="completed-badge"><i class="fas fa-check-circle"></i> Исполнено!</div>`;
         let priceText = String(item.price).trim();
-        if (!priceText.includes('₽') && !priceText.includes('руб')) {
-            priceText += ' ₽';
-        }
-        const contentHtml = `
+        if (!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
+        
+        card.innerHTML = `
+            ${imgHtml}
             <div class="card-content">
                 <div class="card-title">${escapeHtml(item.title)}</div>
                 <div class="card-desc">${escapeHtml(item.description || '')}</div>
                 <div class="price"><i class="fas fa-tag"></i> ${escapeHtml(priceText)}</div>
-                ${badge}
+                <div class="completed-badge"><i class="fas fa-check-circle"></i> Исполнено!</div>
                 <div class="checkbox-wrapper">
                     <input type="checkbox" class="complete-checkbox-input" data-id="${item.id}" ${item.completed ? 'checked' : ''}>
                     <span>Исполнено</span>
@@ -446,11 +405,9 @@
                 </a>
             </div>
         `;
-        card.innerHTML = imgHtml + contentHtml;
         
         const chk = card.querySelector('.complete-checkbox-input');
-        chk.addEventListener('change', async (e) => {
-            e.stopPropagation();
+        chk.addEventListener('change', async () => {
             const newCompleted = chk.checked;
             chk.disabled = true;
             await saveCompleted(item.id, newCompleted);
@@ -462,7 +419,7 @@
         try {
             allItems = await fetchData();
             renderGrids(allItems);
-            document.querySelectorAll('.wishlist-grid').forEach(grid => grid.style.display = 'none');
+            document.querySelectorAll('.wishlist-grid').forEach(g => g.style.display = 'none');
             if (currentTab === 'active') {
                 document.getElementById('activeGrid').style.display = 'grid';
             } else {
@@ -471,18 +428,12 @@
         } catch (err) {
             console.error(err);
             document.getElementById('activeGrid').innerHTML = '<div class="loading"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки. Проверьте URL скрипта.</div>';
-            document.getElementById('completedGrid').innerHTML = '<div class="loading"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки</div>';
         }
     }
     
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
     }
     
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -491,22 +442,19 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTab = btn.dataset.tab;
-            const activeGrid = document.getElementById('activeGrid');
-            const completedGrid = document.getElementById('completedGrid');
-            activeGrid.style.opacity = '0';
-            completedGrid.style.opacity = '0';
+            const ag = document.getElementById('activeGrid');
+            const cg = document.getElementById('completedGrid');
+            ag.style.opacity = '0';
+            cg.style.opacity = '0';
             setTimeout(() => {
                 if (currentTab === 'active') {
-                    activeGrid.style.display = 'grid';
-                    completedGrid.style.display = 'none';
+                    ag.style.display = 'grid';
+                    cg.style.display = 'none';
                 } else {
-                    activeGrid.style.display = 'none';
-                    completedGrid.style.display = 'grid';
+                    ag.style.display = 'none';
+                    cg.style.display = 'grid';
                 }
-                setTimeout(() => {
-                    activeGrid.style.opacity = '1';
-                    completedGrid.style.opacity = '1';
-                }, 20);
+                setTimeout(() => { ag.style.opacity = '1'; cg.style.opacity = '1'; }, 20);
             }, 100);
         });
     });
