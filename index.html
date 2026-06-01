@@ -6,7 +6,6 @@
     <title>Вишлист — активные и исполненные</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* все стили как в предыдущем варианте (полные, но для краткости я их не повторяю, вы возьмите свои готовые стили из последней версии) */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: linear-gradient(145deg, #f4f7fc 0%, #e9eef4 100%); font-family: 'Inter', sans-serif; color: #1a2c3e; padding: 2rem 1.5rem; }
         .container { max-width: 1300px; margin: 0 auto; }
@@ -51,7 +50,8 @@
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxtnRITFeI4_uxn1NEOzkiALX5dLpjg6FvAOyWH8UCB7EKTh_gpqkDeS4xjbsJbSJIv/exec'; // Замените на ваш URL
+    // 👇 ВСТАВЬТЕ ВАШ URL ИЗ APPS SCRIPT (скопированный после обновления)
+    const API_URL = 'https://script.google.com/macros/s/AKfycbyoq8iJHn-lAkNs82s5SvvocV2WUk14pGkES2CDLNgXJHlGiVI1mKTcW7N5SIYLLhLi/exec';
     let allItems = [];
     let currentTab = 'active';
 
@@ -71,11 +71,20 @@
         const activeItems = items.filter(item => !item.completed);
         const completedItems = items.filter(item => item.completed);
         
-        activeContainer.innerHTML = activeItems.length === 0 ? '<div class="empty-message">📭 Пока нет активных желаний.</div>' : '';
-        completedContainer.innerHTML = completedItems.length === 0 ? '<div class="empty-message">🎉 Здесь будут отображаться исполненные желания.</div>' : '';
+        activeContainer.innerHTML = '';
+        completedContainer.innerHTML = '';
         
-        activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
-        completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
+        if (activeItems.length === 0) {
+            activeContainer.innerHTML = '<div class="empty-message">📭 Пока нет активных желаний.</div>';
+        } else {
+            activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
+        }
+        
+        if (completedItems.length === 0) {
+            completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут отображаться исполненные желания.</div>';
+        } else {
+            completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
+        }
     }
     
     function createCardElement(item) {
@@ -114,9 +123,10 @@
             e.stopPropagation();
             const newCompleted = chk.checked ? 'TRUE' : 'FALSE';
             try {
+                // Используем text/plain, чтобы избежать preflight CORS
                 const resp = await fetch(API_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'text/plain' },
                     body: JSON.stringify({ id: item.id, completed: newCompleted })
                 });
                 const text = await resp.text();
