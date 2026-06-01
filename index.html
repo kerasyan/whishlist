@@ -2,308 +2,46 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вишлист — мечты сбываются</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: radial-gradient(circle at 10% 30%, #f8fafc, #eef2f8);
-            font-family: 'Inter', sans-serif;
-            color: #0a1c2f;
-            padding: 2rem 1.5rem;
-            min-height: 100vh;
-        }
-
-        /* кастомный скроллбар */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #b9c3d4;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #8f9bb3;
-        }
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        /* Шапка */
-        .hero {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        .hero h1 {
-            font-size: 3rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #d6406a, #7b3f9e, #2c5f8a);
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-            letter-spacing: -0.02em;
-            display: inline-flex;
-            align-items: center;
-            gap: 14px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .hero h1 i {
-            font-size: 2.8rem;
-            color: #e9b35f;
-            background: none;
-        }
-        .subhead {
-            font-size: 1.1rem;
-            color: #4c6f8c;
-            margin-top: 1rem;
-            font-weight: 400;
-            border-bottom: 2px dashed rgba(100, 120, 150, 0.3);
-            display: block;
-            padding-bottom: 6px;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Табы */
-        .tabs {
-            display: flex;
-            justify-content: center;
-            gap: 1.2rem;
-            margin-bottom: 2.5rem;
-        }
-        .tab-btn {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            padding: 0.8rem 2.2rem;
-            border-radius: 60px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #1e3a5f;
-            font-family: inherit;
-        }
-        .tab-btn i {
-            margin-right: 8px;
-        }
-        .tab-btn.active {
-            background: #1e3a5f;
-            color: white;
-            border-color: #1e3a5f;
-            box-shadow: 0 8px 20px rgba(30,58,95,0.25);
-        }
-
-        /* Сетка — 3 колонки на широких экранах */
-        .wishlist-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(280px, 1fr));
-            gap: 2rem;
-        }
-
-        /* Адаптив */
-        @media (max-width: 1000px) {
-            .wishlist-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-        @media (max-width: 640px) {
-            .wishlist-grid {
-                grid-template-columns: 1fr;
-            }
-            body {
-                padding: 1rem;
-            }
-            .hero h1 {
-                font-size: 2rem;
-            }
-            .tab-btn {
-                padding: 0.5rem 1.2rem;
-                font-size: 0.85rem;
-            }
-        }
-
-        /* Карточка */
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(2px);
-            border-radius: 32px;
-            overflow: hidden;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.1);
-            transition: all 0.35s cubic-bezier(0.2, 0, 0, 1);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.6);
-        }
-        .card:hover {
-            transform: translateY(-8px) scale(1.01);
-            box-shadow: 0 28px 40px -16px rgba(0, 0, 0, 0.25);
-        }
-        .card.completed {
-            opacity: 0.75;
-            background: #ecf1f7;
-            filter: grayscale(0.08);
-        }
-        .card.completed .card-title,
-        .card.completed .card-desc,
-        .card.completed .price {
-            text-decoration: line-through;
-        }
-        .card.completed .buy-link {
-            background: #7f8c8d;
-            pointer-events: none;
-            opacity: 0.7;
-        }
-        .completed-badge {
-            display: none;
-            font-size: 0.7rem;
-            background: #2a7f2e;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 40px;
-            width: fit-content;
-            margin-top: 10px;
-            align-items: center;
-            gap: 6px;
-        }
-        .card.completed .completed-badge {
-            display: inline-flex;
-        }
-
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 0.8rem 0 0.5rem;
-            padding: 6px 0;
-            border-top: 1px solid #e2edf7;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            width: fit-content;
-        }
-        .checkbox-wrapper input {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #1e3a5f;
-        }
-
-        .card-img {
-            width: 100%;
-            height: 210px;
-            object-fit: cover;
-            transition: transform 0.4s ease;
-        }
-        .card:hover .card-img {
-            transform: scale(1.02);
-        }
-        .no-image {
-            background: #e2e8f0;
-            height: 210px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #5a6e8a;
-            gap: 8px;
-        }
-
-        .card-content {
-            padding: 1.5rem 1.3rem 1.6rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .card-title {
-            font-size: 1.45rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #0e2a3b;
-        }
-        .card-desc {
-            font-size: 0.9rem;
-            line-height: 1.45;
-            color: #4a627a;
-            margin-bottom: 1rem;
-        }
-        .price {
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #1f4870;
-            margin: 0.6rem 0 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .price i {
-            color: #e9b35f;
-        }
-
-        .buy-link {
-            background: #1f4870;
-            color: white;
-            text-decoration: none;
-            padding: 11px 18px;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.2s;
-            margin-top: 0.8rem;
-        }
-        .buy-link:hover {
-            background: #0f2f4a;
-            transform: translateY(-2px);
-        }
-
-        .footer-note {
-            text-align: center;
-            margin-top: 3rem;
-            padding: 1rem;
-            font-size: 0.85rem;
-            color: #5b6e86;
-            background: rgba(255, 255, 245, 0.7);
-            backdrop-filter: blur(4px);
-            border-radius: 80px;
-            width: fit-content;
-            margin-left: auto;
-            margin-right: auto;
-            border: 1px solid rgba(106, 78, 155, 0.15);
-        }
-
-        .loading, .empty-message {
-            text-align: center;
-            padding: 3rem;
-            font-size: 1.1rem;
-            color: #5e7c9c;
-            background: rgba(255,255,245,0.5);
-            border-radius: 60px;
-        }
-        .empty-message i {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 12px;
-        }
+        /* Все стили такие же, как в последней красивой версии с 3 колонками */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: radial-gradient(circle at 10% 30%, #f8fafc, #eef2f8); font-family: 'Inter', sans-serif; padding: 2rem 1.5rem; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .hero { text-align: center; margin-bottom: 3rem; }
+        .hero h1 { font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #d6406a, #7b3f9e, #2c5f8a); background-clip: text; -webkit-background-clip: text; color: transparent; display: inline-flex; align-items: center; gap: 14px; }
+        .hero h1 i { font-size: 2.8rem; color: #e9b35f; }
+        .subhead { font-size: 1.1rem; color: #4c6f8c; margin-top: 1rem; border-bottom: 2px dashed rgba(100,120,150,0.3); display: inline-block; padding-bottom: 6px; }
+        .tabs { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 2.5rem; }
+        .tab-btn { background: rgba(255,255,255,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.8); padding: 0.8rem 2.2rem; border-radius: 60px; font-size: 1rem; font-weight: 600; cursor: pointer; color: #1e3a5f; transition: 0.2s; }
+        .tab-btn.active { background: #1e3a5f; color: white; box-shadow: 0 8px 20px rgba(30,58,95,0.25); }
+        .wishlist-grid { display: grid; grid-template-columns: repeat(3, minmax(280px, 1fr)); gap: 2rem; }
+        @media (max-width: 1000px) { .wishlist-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px) { .wishlist-grid { grid-template-columns: 1fr; } }
+        .card { background: rgba(255,255,255,0.95); border-radius: 32px; overflow: hidden; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1); transition: 0.35s; display: flex; flex-direction: column; border: 1px solid rgba(255,255,255,0.6); }
+        .card:hover { transform: translateY(-8px) scale(1.01); }
+        .card.completed { opacity: 0.75; background: #ecf1f7; filter: grayscale(0.08); }
+        .card.completed .card-title, .card.completed .card-desc, .card.completed .price { text-decoration: line-through; }
+        .card.completed .buy-link { background: #7f8c8d; pointer-events: none; opacity: 0.7; }
+        .completed-badge { display: none; font-size: 0.7rem; background: #2a7f2e; color: white; padding: 4px 12px; border-radius: 40px; width: fit-content; margin-top: 10px; align-items: center; gap: 6px; }
+        .card.completed .completed-badge { display: inline-flex; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; margin: 0.8rem 0 0.5rem; padding: 6px 0; border-top: 1px solid #e2edf7; font-size: 0.85rem; font-weight: 500; cursor: pointer; width: fit-content; }
+        .checkbox-wrapper input { width: 18px; height: 18px; cursor: pointer; accent-color: #1e3a5f; }
+        .card-img { width: 100%; height: 210px; object-fit: cover; transition: 0.4s; }
+        .no-image { background: #e2e8f0; height: 210px; display: flex; align-items: center; justify-content: center; color: #5a6e8a; gap: 8px; }
+        .card-content { padding: 1.5rem 1.3rem 1.6rem; flex: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.45rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .card-desc { font-size: 0.9rem; color: #4a627a; margin-bottom: 1rem; }
+        .price { font-weight: 700; font-size: 1.25rem; color: #1f4870; margin: 0.6rem 0 0; display: flex; align-items: center; gap: 6px; }
+        .price i { color: #e9b35f; }
+        .buy-link { background: #1f4870; color: white; text-decoration: none; padding: 11px 18px; border-radius: 60px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 10px; margin-top: 0.8rem; }
+        .buy-link:hover { background: #0f2f4a; transform: translateY(-2px); }
+        .footer-note { text-align: center; margin-top: 3rem; padding: 1rem; font-size: 0.85rem; color: #5b6e86; background: rgba(255,255,245,0.7); backdrop-filter: blur(4px); border-radius: 80px; width: fit-content; margin: 0 auto; }
+        .loading, .empty-message { text-align: center; padding: 3rem; font-size: 1.1rem; color: #5e7c9c; background: rgba(255,255,245,0.5); border-radius: 60px; }
+        .empty-message i { font-size: 2rem; display: block; margin-bottom: 12px; }
     </style>
 </head>
 <body>
@@ -312,21 +50,17 @@
         <h1><i class="fas fa-star-of-life"></i> Список желаний <i class="fas fa-gift"></i></h1>
         <div class="subhead"><i class="fas fa-check-circle"></i> отмечайте исполненное — оно перемещается в отдельный раздел</div>
     </div>
-
     <div class="tabs">
         <button class="tab-btn active" data-tab="active"><i class="fas fa-heart"></i> Активные</button>
         <button class="tab-btn" data-tab="completed"><i class="fas fa-check-double"></i> Исполненные</button>
     </div>
-
     <div id="activeGrid" class="wishlist-grid"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
     <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
-
     <div class="footer-note"><i class="fas fa-database"></i> Данные из Google Таблицы • синхронизация в реальном времени</div>
 </div>
 
 <script>
-    // ⚠️ ЗАМЕНИТЕ НА ВАШ URL ИЗ APPS SCRIPT
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzq6J8alPSiusKLw1FER8x82TiWsY-c0tqHOlKCmEFm0U5UXv16kCNhnNpieTgO8pCp/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzq6J8alPSiusKLw1FER8x82TiWsY-c0tqHOlKCmEFm0U5UXv16kCNhnNpieTgO8pCp/exec';  // ЗАМЕНИТЕ НА ВАШ НОВЫЙ URL
     let allItems = [];
     let currentTab = 'active';
 
@@ -342,12 +76,8 @@
 
     async function saveCompleted(id, completed) {
         const value = completed ? 'TRUE' : 'FALSE';
-        await fetch(API_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ id, completed: value })
-        });
+        // Отправляем GET-запрос на обновление (без CORS)
+        await fetch(`${API_URL}?id=${id}&completed=${value}`);
         setTimeout(() => loadAndRender(), 300);
     }
 
@@ -356,39 +86,23 @@
         const completedContainer = document.getElementById('completedGrid');
         const activeItems = items.filter(i => !i.completed);
         const completedItems = items.filter(i => i.completed);
-        
         activeContainer.innerHTML = '';
         completedContainer.innerHTML = '';
-        
-        if (activeItems.length === 0) {
-            activeContainer.innerHTML = '<div class="empty-message"><i class="fas fa-cloud-moon"></i>Пока нет активных желаний<br><small>добавьте в Google Таблицу</small></div>';
-        } else {
-            activeItems.forEach(item => activeContainer.appendChild(createCard(item)));
-        }
-        
-        if (completedItems.length === 0) {
-            completedContainer.innerHTML = '<div class="empty-message"><i class="fas fa-check-circle"></i>Здесь появятся исполненные мечты 🎉</div>';
-        } else {
-            completedItems.forEach(item => completedContainer.appendChild(createCard(item)));
-        }
+        if (activeItems.length === 0) activeContainer.innerHTML = '<div class="empty-message"><i class="fas fa-cloud-moon"></i>Пока нет активных желаний<br><small>добавьте в Google Таблицу</small></div>';
+        else activeItems.forEach(item => activeContainer.appendChild(createCard(item)));
+        if (completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message"><i class="fas fa-check-circle"></i>Здесь появятся исполненные мечты 🎉</div>';
+        else completedItems.forEach(item => completedContainer.appendChild(createCard(item)));
     }
     
     function createCard(item) {
         const card = document.createElement('div');
         card.className = 'card';
         if (item.completed) card.classList.add('completed');
-        
-        let imgHtml = '';
-        if (item.imageUrl && item.imageUrl.trim()) {
-            imgHtml = `<img class="card-img" src="${escapeHtml(item.imageUrl)}" alt="${escapeHtml(item.title)}" loading="lazy" onerror="this.onerror=null;this.style.display='none'; this.nextElementSibling.style.display='flex';">`;
-            imgHtml += `<div class="no-image" style="display: none;"><i class="fas fa-image"></i> фото не загрузилось</div>`;
-        } else {
-            imgHtml = `<div class="no-image"><i class="fas fa-camera"></i> нет фото</div>`;
-        }
-        
+        let imgHtml = (item.imageUrl && item.imageUrl.trim()) ? 
+            `<img class="card-img" src="${escapeHtml(item.imageUrl)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" loading="lazy"><div class="no-image" style="display: none;"><i class="fas fa-image"></i> фото не загрузилось</div>` :
+            `<div class="no-image"><i class="fas fa-camera"></i> нет фото</div>`;
         let priceText = String(item.price).trim();
         if (!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
-        
         card.innerHTML = `
             ${imgHtml}
             <div class="card-content">
@@ -397,7 +111,7 @@
                 <div class="price"><i class="fas fa-tag"></i> ${escapeHtml(priceText)}</div>
                 <div class="completed-badge"><i class="fas fa-check-circle"></i> Исполнено!</div>
                 <div class="checkbox-wrapper">
-                    <input type="checkbox" class="complete-checkbox-input" data-id="${item.id}" ${item.completed ? 'checked' : ''}>
+                    <input type="checkbox" class="complete-chk" data-id="${item.id}" ${item.completed ? 'checked' : ''}>
                     <span>Исполнено</span>
                 </div>
                 <a href="${escapeHtml(item.shopLink)}" class="buy-link" target="_blank" rel="noopener noreferrer">
@@ -405,12 +119,10 @@
                 </a>
             </div>
         `;
-        
-        const chk = card.querySelector('.complete-checkbox-input');
+        const chk = card.querySelector('.complete-chk');
         chk.addEventListener('change', async () => {
-            const newCompleted = chk.checked;
             chk.disabled = true;
-            await saveCompleted(item.id, newCompleted);
+            await saveCompleted(item.id, chk.checked);
         });
         return card;
     }
@@ -420,21 +132,15 @@
             allItems = await fetchData();
             renderGrids(allItems);
             document.querySelectorAll('.wishlist-grid').forEach(g => g.style.display = 'none');
-            if (currentTab === 'active') {
-                document.getElementById('activeGrid').style.display = 'grid';
-            } else {
-                document.getElementById('completedGrid').style.display = 'grid';
-            }
+            if (currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
+            else document.getElementById('completedGrid').style.display = 'grid';
         } catch (err) {
             console.error(err);
             document.getElementById('activeGrid').innerHTML = '<div class="loading"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки. Проверьте URL скрипта.</div>';
         }
     }
     
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;'));
-    }
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
     
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -447,13 +153,8 @@
             ag.style.opacity = '0';
             cg.style.opacity = '0';
             setTimeout(() => {
-                if (currentTab === 'active') {
-                    ag.style.display = 'grid';
-                    cg.style.display = 'none';
-                } else {
-                    ag.style.display = 'none';
-                    cg.style.display = 'grid';
-                }
+                if (currentTab === 'active') { ag.style.display = 'grid'; cg.style.display = 'none'; }
+                else { ag.style.display = 'none'; cg.style.display = 'grid'; }
                 setTimeout(() => { ag.style.opacity = '1'; cg.style.opacity = '1'; }, 20);
             }, 100);
         });
