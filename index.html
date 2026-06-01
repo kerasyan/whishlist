@@ -50,8 +50,8 @@
 </div>
 
 <script>
-    // 👇 ВСТАВЬТЕ ВАШ URL ИЗ APPS SCRIPT (скопированный после обновления)
-    const API_URL = 'https://script.google.com/macros/s/AKfycbyoq8iJHn-lAkNs82s5SvvocV2WUk14pGkES2CDLNgXJHlGiVI1mKTcW7N5SIYLLhLi/exec';
+    // 👇 ВАШ URL ПОСЛЕ ОБНОВЛЕНИЯ СКРИПТА
+    const API_URL = 'https://script.google.com/macros/s/AKfycbySDPja9ZbwBn8WBtjBqGbDcKHx78DUX4xiMdGzpUHb501iBOhiPS_EDGDDiJf-yAIc/exec';
     let allItems = [];
     let currentTab = 'active';
 
@@ -63,6 +63,15 @@
             ...item,
             completed: (item.completed === 'TRUE' || item.completed === true)
         }));
+    }
+
+    async function updateCompleted(id, completed) {
+        const value = completed ? 'TRUE' : 'FALSE';
+        const url = `${API_URL}?id=${id}&completed=${value}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+        if (result.success !== true) throw new Error('Ошибка обновления');
     }
 
     function renderGrids(items) {
@@ -121,23 +130,10 @@
         chk.checked = item.completed;
         chk.addEventListener('change', async (e) => {
             e.stopPropagation();
-            const newCompleted = chk.checked ? 'TRUE' : 'FALSE';
+            const newCompleted = chk.checked;
             try {
-                // Используем text/plain, чтобы избежать preflight CORS
-                const resp = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain' },
-                    body: JSON.stringify({ id: item.id, completed: newCompleted })
-                });
-                const text = await resp.text();
-                console.log('Ответ сервера:', text);
-                let result;
-                try { result = JSON.parse(text); } catch(e) { throw new Error('Ответ не JSON: ' + text); }
-                if (result.success === true) {
-                    await loadAndRender();
-                } else {
-                    throw new Error(result.error || 'Неизвестная ошибка');
-                }
+                await updateCompleted(item.id, newCompleted);
+                await loadAndRender();
             } catch (err) {
                 console.error(err);
                 alert('Ошибка: ' + err.message);
