@@ -72,11 +72,14 @@
         .subhead {
             font-size: 1.1rem;
             color: #4c6f8c;
-            margin-top: 0.6rem;
+            margin-top: 1rem;
             font-weight: 400;
             border-bottom: 2px dashed rgba(100, 120, 150, 0.3);
-            display: inline-block;
+            display: block;
             padding-bottom: 6px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Табы — стеклянные */
@@ -184,34 +187,28 @@
             display: inline-flex;
         }
 
-        /* Чекбокс */
-        .complete-checkbox {
-            position: absolute;
-            top: 16px;
-            right: 16px;
-            z-index: 12;
-            background: rgba(255, 248, 235, 0.95);
-            backdrop-filter: blur(8px);
-            padding: 6px 12px;
-            border-radius: 40px;
-            font-size: 0.8rem;
+        /* Чекбокс — теперь внутри карточки, не абсолютный */
+        .checkbox-wrapper {
             display: flex;
             align-items: center;
             gap: 8px;
-            cursor: pointer;
-            border: 1px solid #ffffffcc;
-            transition: all 0.2s;
+            margin: 0.8rem 0 0.5rem;
+            padding: 6px 0;
+            border-top: 1px solid #e2edf7;
+            background: transparent;
+            font-size: 0.85rem;
             font-weight: 500;
+            cursor: pointer;
+            width: fit-content;
         }
-        .complete-checkbox:hover {
-            background: white;
-            transform: scale(1.02);
-        }
-        .complete-checkbox input {
+        .checkbox-wrapper input {
             width: 18px;
             height: 18px;
             cursor: pointer;
             accent-color: #1e3a5f;
+        }
+        .checkbox-wrapper:hover {
+            opacity: 0.8;
         }
 
         /* картинка */
@@ -258,9 +255,7 @@
             font-weight: 700;
             font-size: 1.25rem;
             color: #1f4870;
-            margin: 0.6rem 0 0.8rem;
-            border-top: 1px solid #e2edf7;
-            padding-top: 0.7rem;
+            margin: 0.6rem 0 0;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -283,7 +278,7 @@
             justify-content: center;
             gap: 10px;
             transition: all 0.2s;
-            margin-top: auto;
+            margin-top: 0.8rem;
             border: none;
             cursor: pointer;
         }
@@ -435,12 +430,21 @@
         }
         
         const badge = `<div class="completed-badge"><i class="fas fa-check-circle"></i> Исполнено!</div>`;
+        // Добавляем знак рубля к цене, если его ещё нет
+        let priceText = String(item.price).trim();
+        if (!priceText.includes('₽') && !priceText.includes('руб')) {
+            priceText += ' ₽';
+        }
         const contentHtml = `
             <div class="card-content">
                 <div class="card-title">${escapeHtml(item.title)}</div>
                 <div class="card-desc">${escapeHtml(item.description || '')}</div>
-                <div class="price"><i class="fas fa-tag"></i> ${escapeHtml(String(item.price))}</div>
+                <div class="price"><i class="fas fa-tag"></i> ${escapeHtml(priceText)}</div>
                 ${badge}
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" class="complete-checkbox-input" data-id="${item.id}" ${item.completed ? 'checked' : ''}>
+                    <span>Исполнено</span>
+                </div>
                 <a href="${escapeHtml(item.shopLink)}" class="buy-link" target="_blank" rel="noopener noreferrer">
                     <i class="fas fa-cart-shopping"></i> ${escapeHtml(item.buttonText || 'Купить')}
                 </a>
@@ -448,22 +452,15 @@
         `;
         card.innerHTML = imgHtml + contentHtml;
         
-        const chkDiv = document.createElement('div');
-        chkDiv.className = 'complete-checkbox';
-        const chk = document.createElement('input');
-        chk.type = 'checkbox';
-        chk.checked = item.completed;
+        // Навешиваем обработчик на чекбокс
+        const chk = card.querySelector('.complete-checkbox-input');
         chk.addEventListener('change', async (e) => {
             e.stopPropagation();
             const newCompleted = chk.checked;
             chk.disabled = true;
             await saveCompleted(item.id, newCompleted);
-            // чекбокс снова активируется после перерисовки
+            // После сохранения перерисуем (через loadAndRender чекбокс обновится)
         });
-        chkDiv.appendChild(chk);
-        chkDiv.appendChild(document.createTextNode(' Исполнено'));
-        card.style.position = 'relative';
-        card.appendChild(chkDiv);
         return card;
     }
     
@@ -494,14 +491,13 @@
         });
     }
     
-    // Обработка табов с плавной сменой
+    // Обработка табов
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (currentTab === btn.dataset.tab) return;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTab = btn.dataset.tab;
-            // лёгкая анимация смены контента
             const activeGrid = document.getElementById('activeGrid');
             const completedGrid = document.getElementById('completedGrid');
             activeGrid.style.opacity = '0';
