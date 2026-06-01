@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вишлист с отметками</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: linear-gradient(145deg, #f4f7fc 0%, #e9eef4 100%); font-family: 'Inter', sans-serif; padding: 2rem; }
+        .container { max-width: 1300px; margin: 0 auto; }
+        h1 { text-align: center; font-size: 2.5rem; background: linear-gradient(135deg, #c44569, #6a4e9b); background-clip: text; -webkit-background-clip: text; color: transparent; margin-bottom: 0.5rem; }
+        .sub { text-align: center; color: #4a627a; margin-bottom: 2rem; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem; }
+        .card { background: white; border-radius: 28px; overflow: hidden; box-shadow: 0 12px 28px rgba(0,0,0,0.08); transition: 0.2s; position: relative; }
+        .card:hover { transform: translateY(-6px); }
+        .card.completed { opacity: 0.7; background: #ecf1f7; }
+        .card.completed .title, .card.completed .desc, .card.completed .price { text-decoration: line-through; }
+        .card.completed .buy-btn { background: #7f8c8d; pointer-events: none; }
+        .card-img { width: 100%; height: 200px; object-fit: cover; background: #eef2f7; }
+        .card-content { padding: 1.2rem; }
+        .title { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .desc { font-size: 0.9rem; color: #4a5c70; margin-bottom: 1rem; }
+        .price { font-weight: 700; font-size: 1.2rem; color: #2c3e66; margin: 0.5rem 0; border-top: 1px solid #edf2f7; padding-top: 0.7rem; }
+        .buy-btn { display: block; background: #2c3e66; color: white; text-align: center; padding: 10px; border-radius: 40px; text-decoration: none; font-weight: 600; margin-top: 1rem; }
+        .checkbox-wrapper { position: absolute; top: 12px; right: 12px; background: rgba(255,255,240,0.95); padding: 5px 10px; border-radius: 40px; display: flex; align-items: center; gap: 5px; font-size: 0.8rem; cursor: pointer; z-index: 2; border: 1px solid #d4deec; }
+        .footer { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: #5f738c; }
+        .loading { text-align: center; padding: 2rem; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>✨ Список желаний ✨</h1>
+    <div class="sub">✔️ отмечайте исполненные — изменения увидят все</div>
+    <div class="grid" id="grid"><div class="loading">⏳ Загрузка...</div></div>
+    <div class="footer">📌 Добавляйте новые позиции в Google Таблицу — они появятся здесь автоматически.</div>
+</div>
+<script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwLDzublizTm1TllXJOD_quQjXOYl46rr2KOQXsdjUFMw8cyqTrmk_cVBV6tisylQ/exec';
+
+    async function load() {
+        const grid = document.getElementById('grid');
+        try {
+            const resp = await fetch(API_URL);
+            if (!resp.ok) throw new Error('Ошибка сети');
+            const items = await resp.json();
+            if (!items.length) {
+                grid.innerHTML = '<div class="loading">📭 Пока нет хотелок. Добавьте первую в Google Таблицу.</div>';
+                return;
+            }
+            grid.innerHTML = '';
+            for (let item of items) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                const completed = (item.completed === 'TRUE' || item.completed === true);
+                if (completed) card.classList.add('completed');
+                
+                const imgSrc = item.imageUrl || '';
+                const imgHtml = imgSrc ? `<img class="card-img" src="${imgSrc}" onerror="this.src='https://placehold.co/400x200?text=Фото+не+загрузилось'">` : '<div class="card-img" style="display:flex; align-items:center; justify-content:center; background:#e2e8f0;">📷 нет фото</div>';
+                
+                card.innerHTML = `
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" class="complete-chk" data-id="${item.id}" ${completed ? 'checked' : ''}>
+                        <span>Исполнено</span>
+                    </div>
+                    ${imgHtml}
+                    <div class="card-content">
+                        <div class="title">${escape(item.title)}</div>
+                        <div class="desc">${escape(item.description || '')}</div>
+                        <div class="price">💰 ${escape(String(item.price))}</div>
+                        <a href="${escape(item.shopLink)}" target="_blank" rel="noopener noreferrer" class="buy-btn">🛒 ${escape(item.buttonText || 'Купить')}</a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+            // навесить обработчики после вставки
+            document.querySelectorAll('.complete-chk').forEach(chk => {
+                chk.addEventListener('change', async (e) => {
+                    const id = parseInt(chk.dataset.id);
+                    const newCompleted = chk.checked ? 'TRUE' : 'FALSE';
+                    try {
+                        const response = await fetch(API_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id, completed: newCompleted })
+                        });
+                        const result = await response.json();
+                        if (result.success === true) {
+                            // обновить внешний вид карточки
+                            const card = chk.closest('.card');
+                            if (chk.checked) card.classList.add('completed');
+                            else card.classList.remove('completed');
+                        } else {
+                            throw new Error('Сервер вернул ошибку');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        alert('Не удалось сохранить отметку. Проверьте интернет.');
+                        chk.checked = !chk.checked;
+                    }
+                });
+            });
+        } catch (err) {
+            console.error(err);
+            grid.innerHTML = '<div class="loading">❌ Ошибка загрузки. Проверьте URL скрипта.</div>';
+        }
+    }
+
+    function escape(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    load();
+    setInterval(load, 15000);
+</script>
+</body>
+</html>
