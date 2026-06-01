@@ -39,7 +39,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1100px;
             margin: 0 auto;
         }
 
@@ -118,21 +118,18 @@
             transform: translateY(-2px);
         }
 
-        /* сетка карточек */
+        /* сетка карточек — 2 колонки на широких, 1 на узких */
         .wishlist-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+            grid-template-columns: repeat(2, minmax(320px, 1fr));
             gap: 2rem;
-            animation: fadeInUp 0.4s ease-out;
+            max-width: 1100px;
+            margin: 0 auto;
         }
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
+
+        @media (max-width: 700px) {
+            .wishlist-grid {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -187,7 +184,7 @@
             display: inline-flex;
         }
 
-        /* Чекбокс — теперь внутри карточки, не абсолютный */
+        /* Чекбокс внутри карточки, не абсолютный */
         .checkbox-wrapper {
             display: flex;
             align-items: center;
@@ -368,8 +365,8 @@
 </div>
 
 <script>
-    // ========== ВАШ URL APPS SCRIPT ==========
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzq6J8alPSiusKLw1FER8x82TiWsY-c0tqHOlKCmEFm0U5UXv16kCNhnNpieTgO8pCp/exec';  // ЗАМЕНИТЕ НА СВОЙ
+    // ========== ВАШ URL APPS SCRIPT (ЗАМЕНИТЕ НА СВОЙ) ==========
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzq6J8alPSiusKLw1FER8x82TiWsY-c0tqHOlKCmEFm0U5UXv16kCNhnNpieTgO8pCp/exec';
     let allItems = [];
     let currentTab = 'active';
 
@@ -430,7 +427,6 @@
         }
         
         const badge = `<div class="completed-badge"><i class="fas fa-check-circle"></i> Исполнено!</div>`;
-        // Добавляем знак рубля к цене, если его ещё нет
         let priceText = String(item.price).trim();
         if (!priceText.includes('₽') && !priceText.includes('руб')) {
             priceText += ' ₽';
@@ -452,14 +448,12 @@
         `;
         card.innerHTML = imgHtml + contentHtml;
         
-        // Навешиваем обработчик на чекбокс
         const chk = card.querySelector('.complete-checkbox-input');
         chk.addEventListener('change', async (e) => {
             e.stopPropagation();
             const newCompleted = chk.checked;
             chk.disabled = true;
             await saveCompleted(item.id, newCompleted);
-            // После сохранения перерисуем (через loadAndRender чекбокс обновится)
         });
         return card;
     }
@@ -491,7 +485,6 @@
         });
     }
     
-    // Обработка табов
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if (currentTab === btn.dataset.tab) return;
