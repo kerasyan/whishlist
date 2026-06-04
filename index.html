@@ -77,32 +77,35 @@
         }
         .card.completed .completed-badge { display: inline-flex; align-items: center; gap: 5px; }
         
+        /* Кнопки в одну строку */
         .card-actions {
             position: absolute;
             top: 12px;
             left: 12px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             z-index: 20;
-            flex-wrap: wrap;
-            max-width: calc(100% - 140px); /* не залезаем на правую кнопку */
+            flex-wrap: nowrap;
         }
         .action-btn {
             background: rgba(0,0,0,0.65);
             backdrop-filter: blur(4px);
             color: white;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 40px;
             font-size: 0.75rem;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 4px;
             border: none;
             transition: 0.2s;
-            white-space: nowrap;
+            min-width: 36px;
         }
+        .action-btn i { font-size: 0.85rem; }
+        .action-btn span { display: none; }  /* скрываем текст, оставляем только иконки */
         .action-btn:hover { background: rgba(0,0,0,0.85); transform: scale(1.02); }
         .delete-btn:hover { background: #b91c1c; }
         
@@ -115,18 +118,18 @@
             color: white;
             padding: 6px 8px;
             border-radius: 40px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             z-index: 20;
             border: none;
-            width: 110px;          /* фиксированная ширина */
-            text-align: center;
+            width: 90px;
             white-space: nowrap;
         }
+        .owner-switch i { font-size: 0.8rem; }
         .owner-switch:hover { background: rgba(0,0,0,0.85); }
         
         .print-badge {
@@ -223,9 +226,8 @@
         .loading, .empty-message { text-align: center; padding: 2rem; color: #5e7c9c; }
 
         @media (max-width: 640px) {
-            .owner-switch { width: 95px; font-size: 0.7rem; padding: 4px 6px; }
-            .action-btn { padding: 4px 8px; font-size: 0.7rem; }
-            .card-actions { max-width: calc(100% - 110px); }
+            .owner-switch { width: 80px; font-size: 0.65rem; padding: 4px 4px; }
+            .action-btn { padding: 4px 6px; }
         }
     </style>
 </head>
@@ -366,7 +368,6 @@
         let priceText = String(item.price).trim();
         if (!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
 
-        // Формируем текст для кнопки владельца (короткий, фиксированной ширины)
         let ownerText = '';
         if (item.owner === 'me') ownerText = '👨 Моё';
         else if (item.owner === 'wife') ownerText = '👩 Жене';
@@ -374,9 +375,9 @@
 
         card.innerHTML = `
             <div class="card-actions">
-                <div class="action-btn print-btn" title="Пометить на печать"><i class="fas fa-print"></i> <span>Распечатай</span></div>
-                <div class="action-btn edit-btn" title="Редактировать"><i class="fas fa-edit"></i> <span>Изменить</span></div>
-                <div class="action-btn delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i> <span>Удалить</span></div>
+                <div class="action-btn print-btn" title="Распечатай"><i class="fas fa-print"></i><span>Распечатай</span></div>
+                <div class="action-btn edit-btn" title="Редактировать"><i class="fas fa-edit"></i><span>Изменить</span></div>
+                <div class="action-btn delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i><span>Удалить</span></div>
             </div>
             <div class="owner-switch" title="Сменить владельца"><i class="fas fa-user-friends"></i> ${ownerText} 🔄</div>
             <div class="print-badge"><i class="fas fa-print"></i> РАСПЕЧАТАТЬ!</div>
