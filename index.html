@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вишлист — чистовая версия</title>
+    <title>Вишлист — с перетаскиванием</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -89,7 +90,9 @@
             display: flex;
             flex-direction: column;
             border: 2px solid;
+            cursor: grab;
         }
+        .card:active { cursor: grabbing; }
         .card.owner-me { background: #e0f2fe; border-color: #7ab3c8; }
         .card.owner-wife { background: #ffe4e6; border-color: #e6a0b0; }
         .card.owner-common { background: #f3f4f6; border-color: #9ca3af; }
@@ -108,7 +111,6 @@
         }
         .card.completed .completed-badge { display: inline-flex; align-items: center; gap: 5px; }
         
-        /* Кнопки в одну строку */
         .card-actions {
             position: absolute;
             top: 12px;
@@ -158,7 +160,7 @@
             width: 48px;
             text-align: center;
         }
-        .owner-switch span { display: none; }  /* скрываем стрелку */
+        .owner-switch span { display: none; }
         .owner-switch:hover { background: rgba(0,0,0,0.85); }
         
         .print-badge {
@@ -266,7 +268,7 @@
 <div class="container">
     <div class="hero">
         <h1><i class="fas fa-star-of-life"></i> Список желаний <i class="fas fa-gift"></i></h1>
-        <div class="subhead">Управляйте желаниями, отмечайте исполненные</div>
+        <div class="subhead">Перетаскивайте карточки — порядок сохраняется для всех</div>
     </div>
     <div class="filters">
         <button class="filter-btn active" data-filter="all">👥 Все</button>
@@ -303,11 +305,12 @@
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxBojr1YXovZxz-uqXA-jHfqtnnv5zyiqrIdHEIOvHBXhfnWtjC90WI93p2CWG2mv7N/exec'; // ЗАМЕНИТЕ
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzXQ0ACW8ruJm76Sm185Eo9DvQ3zGfbnc8sQxZPDtF-HaM7OIRZsLSWuxlXBNBCHnDy/exec'; // ЗАМЕНИТЕ
     let allItems = [];
     let currentTab = 'active';
     let currentFilter = 'all';
     let printModeIds = [];
+    let sortableInstances = [];
 
     function loadPrintModes() {
         const saved = localStorage.getItem('wishlist_print_modes');
@@ -359,6 +362,17 @@
 
     async function setOwner(id, owner) {
         await fetch(`${API_URL}?setOwner=1&id=${id}&owner=${owner}`);
+        await loadAndRender();
+    }
+
+    async function updateOrder(containerId) {
+        const container = document.getElementById(containerId);
+        const cards = container.querySelectorAll('.card:not(.add-card)');
+        const orderData = Array.from(cards).map((card, idx) => ({
+            id: parseInt(card.dataset.id),
+            order: idx
+        }));
+        await fetch(`${API_URL}?updateOrder=1&orderData=${JSON.stringify(orderData)}`);
         await loadAndRender();
     }
 
@@ -485,13 +499,42 @@
         }
     }
 
+    function initSortable() {
+        if (sortableInstances.length) {
+            sortableInstances.forEach(s => s.destroy());
+            sortableInstances = [];
+        }
+        const activeGrid = document.getElementById('activeGrid');
+        const completedGrid = document.getElementById('completedGrid');
+        if (activeGrid) {
+            const sortable = new Sortable(activeGrid, {
+                animation: 200,
+                handle: '.card:not(.add-card)',
+                onEnd: () => updateOrder('activeGrid')
+            });
+            sortableInstances.push(sortable);
+        }
+        if (completedGrid) {
+            const sortable = new Sortable(completedGrid, {
+                animation: 200,
+                handle: '.card',
+                onEnd: () => updateOrder('completedGrid')
+            });
+            sortableInstances.push(sortable);
+        }
+    }
+
     async function loadAndRender() {
         try {
             allItems = await fetchData();
             renderGrids(allItems);
             document.querySelectorAll('.wishlist-grid').forEach(g => g.style.display = 'none');
-            if (currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
-            else document.getElementById('completedGrid').style.display = 'grid';
+            if (currentTab === 'active') {
+                document.getElementById('activeGrid').style.display = 'grid';
+            } else {
+                document.getElementById('completedGrid').style.display = 'grid';
+            }
+            initSortable();
         } catch (err) {
             console.error(err);
             document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки. Проверьте URL скрипта.</div>';
