@@ -6,7 +6,6 @@
     <title>Вишлист — перетаскивание и синхронизация</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- SortableJS для перетаскивания -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,20 +27,8 @@
             margin-bottom: 0.5rem;
         }
         .hero h1 i { font-size: 2.8rem; color: #e9b35f; margin: 0 0.25rem; }
-        .subhead {
-            font-size: 1rem;
-            color: #4c6f8c;
-            border-bottom: 2px dashed rgba(100,120,150,0.3);
-            display: inline-block;
-            padding-bottom: 6px;
-        }
-        .filters {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
+        .subhead { font-size: 1rem; color: #4c6f8c; border-bottom: 2px dashed rgba(100,120,150,0.3); display: inline-block; padding-bottom: 6px; }
+        .filters { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
         .filter-btn, .tab-btn {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(8px);
@@ -53,10 +40,7 @@
             cursor: pointer;
             color: #1e3a5f;
         }
-        .filter-btn.active, .tab-btn.active {
-            background: #1e3a5f;
-            color: white;
-        }
+        .filter-btn.active, .tab-btn.active { background: #1e3a5f; color: white; }
         .tabs { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
         .wishlist-grid {
             display: grid;
@@ -205,6 +189,7 @@
         }
         .close-btn { background: #ccc !important; margin-left: 8px; }
         .footer-note { text-align: center; margin-top: 2rem; font-size: 0.8rem; color: #5b6e86; }
+        .loading, .empty-message { text-align: center; padding: 2rem; color: #5e7c9c; }
     </style>
 </head>
 <body>
@@ -247,84 +232,88 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwrPoEUefuaoz9TlpKPEwEmlWYGPt5AACsRuJR3V2jCm_4RIEdQ3Tpk9vBSPlS-rxDn/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwrPoEUefuaoz9TlpKPEwEmlWYGPt5AACsRuJR3V2jCm_4RIEdQ3Tpk9vBSPlS-rxDn/exec'; // ЗАМЕНИТЕ НА СВОЙ URL
     let allItems = [];
     let currentTab = 'active';
     let currentFilter = 'all';
     let printModeIds = [];
-    let sortableInstances = []; // для хранения Sortable объектов
-    
-    // Загрузка сохранённых отметок печати
-    function loadPrintModes() { const saved = localStorage.getItem('wishlist_print_modes'); if(saved) printModeIds = JSON.parse(saved); else printModeIds = []; }
-    function savePrintModes() { localStorage.setItem('wishlist_print_modes', JSON.stringify(printModeIds)); }
-    
+    let sortableInstance = null;
+
+    function loadPrintModes() {
+        const saved = localStorage.getItem('wishlist_print_modes');
+        printModeIds = saved ? JSON.parse(saved) : [];
+    }
+    function savePrintModes() {
+        localStorage.setItem('wishlist_print_modes', JSON.stringify(printModeIds));
+    }
+
     async function fetchData() {
         const resp = await fetch(API_URL);
-        if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const items = await resp.json();
-        return items.map(item => ({ ...item, completed: (item.completed === 'TRUE' || item.completed === true) }));
+        return items.map(item => ({
+            ...item,
+            completed: (item.completed === 'TRUE' || item.completed === true)
+        }));
     }
-    
+
     async function saveCompleted(id, completed) {
-        await fetch(`${API_URL}?id=${id}&completed=${completed?'TRUE':'FALSE'}`);
-        setTimeout(() => loadAndRender(), 300);
+        await fetch(`${API_URL}?id=${id}&completed=${completed ? 'TRUE' : 'FALSE'}`);
+        await loadAndRender(); // сразу обновляем
     }
-    
+
     async function updateWish(id, wishData) {
-        const params = new URLSearchParams({ update:'1', id, ...wishData });
+        const params = new URLSearchParams({ update: '1', id, ...wishData });
         const resp = await fetch(`${API_URL}?${params.toString()}`);
         const result = await resp.json();
+        if (result.success) await loadAndRender();
         return result.success;
     }
-    
+
     async function addWish(wishData) {
-        const params = new URLSearchParams({ add:'1', ...wishData });
+        const params = new URLSearchParams({ add: '1', ...wishData });
         const resp = await fetch(`${API_URL}?${params.toString()}`);
         const result = await resp.json();
+        if (result.success) await loadAndRender();
         return result.success;
     }
-    
+
     async function deleteWish(id) {
-        if(!confirm('Удалить хотелку?')) return false;
+        if (!confirm('Удалить хотелку?')) return false;
         const resp = await fetch(`${API_URL}?delete=1&id=${id}`);
         const result = await resp.json();
-        if(result.success) loadAndRender();
+        if (result.success) await loadAndRender();
         return result.success;
     }
-    
+
     async function setOwner(id, owner) {
         await fetch(`${API_URL}?setOwner=1&id=${id}&owner=${owner}`);
-        loadAndRender();
+        await loadAndRender(); // перезагружаем после смены
     }
-    
-    // Обновление порядка карточек после перетаскивания
+
     async function updateOrder(containerId) {
         const container = document.getElementById(containerId);
-        const cards = container.querySelectorAll('.card:not(.add-card)'); // исключаем карточку-плюс
-        const orderData = Array.from(cards).map((card, idx) => {
-            const id = parseInt(card.dataset.id);
-            return { id, order: idx };
-        });
-        // Отправляем на сервер
+        const cards = container.querySelectorAll('.card:not(.add-card)');
+        const orderData = Array.from(cards).map((card, idx) => ({
+            id: parseInt(card.dataset.id),
+            order: idx
+        }));
         await fetch(`${API_URL}?updateOrder=1&orderData=${JSON.stringify(orderData)}`);
-        // Не перезагружаем сразу, чтобы не было дерганья, но надо обновить порядок в allItems
-        // Просто перезагрузим данные через секунду
-        setTimeout(() => loadAndRender(), 300);
+        await loadAndRender(); // обновляем порядок
     }
-    
+
     function togglePrintMode(card, id) {
-        if(card.classList.contains('print-mode')) {
+        if (card.classList.contains('print-mode')) {
             card.classList.remove('print-mode');
             printModeIds = printModeIds.filter(pid => pid !== id);
         } else {
             card.classList.add('print-mode');
-            if(!printModeIds.includes(id)) printModeIds.push(id);
+            if (!printModeIds.includes(id)) printModeIds.push(id);
         }
         savePrintModes();
     }
-    
+
     function openEditModal(item) {
         document.getElementById('editId').value = item.id;
         document.getElementById('editTitle').value = item.title;
@@ -337,20 +326,20 @@
         document.getElementById('modalTitle').innerText = '✏️ Редактировать хотелку';
         document.getElementById('editModal').style.display = 'flex';
     }
-    
-    function createCardElement(item, isActive = true) {
+
+    function createCardElement(item) {
         const card = document.createElement('div');
         card.className = `card owner-${item.owner || 'common'}`;
-        if(item.completed) card.classList.add('completed');
-        if(printModeIds.includes(item.id)) card.classList.add('print-mode');
+        if (item.completed) card.classList.add('completed');
+        if (printModeIds.includes(item.id)) card.classList.add('print-mode');
         card.dataset.id = item.id;
-        
+
         let imgHtml = (item.imageUrl && item.imageUrl.trim()) ?
             `<img class="card-img" src="${escapeHtml(item.imageUrl)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" loading="lazy"><div class="no-image" style="display:none;">📷 нет фото</div>` :
             `<div class="no-image">📷 нет фото</div>`;
         let priceText = String(item.price).trim();
-        if(!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
-        
+        if (!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
+
         card.innerHTML = `
             <div class="card-actions">
                 <div class="action-btn print-btn" title="Пометить на печать"><i class="fas fa-print"></i></div>
@@ -374,42 +363,51 @@
                 </a>
             </div>
         `;
-        
+
         const chk = card.querySelector('.complete-chk');
         chk.addEventListener('change', async () => {
             chk.disabled = true;
             await saveCompleted(item.id, chk.checked);
         });
-        card.querySelector('.print-btn').onclick = (e) => { e.stopPropagation(); togglePrintMode(card, item.id); };
-        card.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); openEditModal(item); };
-        card.querySelector('.delete-btn').onclick = async (e) => { e.stopPropagation(); await deleteWish(item.id); };
+
+        card.querySelector('.print-btn').onclick = (e) => {
+            e.stopPropagation();
+            togglePrintMode(card, item.id);
+        };
+        card.querySelector('.edit-btn').onclick = (e) => {
+            e.stopPropagation();
+            openEditModal(item);
+        };
+        card.querySelector('.delete-btn').onclick = async (e) => {
+            e.stopPropagation();
+            await deleteWish(item.id);
+        };
         const ownerBtn = card.querySelector('.owner-switch');
         ownerBtn.onclick = async (e) => {
             e.stopPropagation();
             let newOwner = 'common';
-            if(item.owner === 'common') newOwner = 'me';
-            else if(item.owner === 'me') newOwner = 'wife';
+            if (item.owner === 'common') newOwner = 'me';
+            else if (item.owner === 'me') newOwner = 'wife';
             else newOwner = 'common';
             await setOwner(item.id, newOwner);
         };
         return card;
     }
-    
+
     function renderGrids(items) {
         const activeContainer = document.getElementById('activeGrid');
         const completedContainer = document.getElementById('completedGrid');
-        
-        // Фильтрация по владельцу
+
         let filtered = items;
-        if(currentFilter !== 'all') filtered = items.filter(i => (i.owner || 'common') === currentFilter);
+        if (currentFilter !== 'all') filtered = items.filter(i => (i.owner || 'common') === currentFilter);
         const activeItems = filtered.filter(i => !i.completed);
         const completedItems = filtered.filter(i => i.completed);
-        
+
         activeContainer.innerHTML = '';
         completedContainer.innerHTML = '';
-        
-        // Карточка добавления для активных
-        if(currentTab === 'active') {
+
+        if (currentTab === 'active') {
+            // Карточка добавления
             const addCard = document.createElement('div');
             addCard.className = 'card add-card';
             addCard.innerHTML = `<div class="add-card-content"><i class="fas fa-plus-circle"></i><span>Добавить хотелку</span></div>`;
@@ -426,58 +424,51 @@
                 document.getElementById('editModal').style.display = 'flex';
             };
             activeContainer.appendChild(addCard);
-            activeItems.forEach(item => activeContainer.appendChild(createCardElement(item, true)));
-            if(activeItems.length === 0 && activeContainer.children.length === 1) {
-                activeContainer.innerHTML += '<div class="empty-message" style="text-align:center; padding:2rem;">📭 Нет активных желаний</div>';
+            activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
+            if (activeItems.length === 0 && activeContainer.children.length === 1) {
+                activeContainer.innerHTML += '<div class="empty-message">📭 Нет активных желаний</div>';
             }
         } else {
-            completedItems.forEach(item => completedContainer.appendChild(createCardElement(item, false)));
-            if(completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
+            completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
+            if (completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
         }
-        
-        // Инициализация перетаскивания
-        if(sortableInstances.length) sortableInstances.forEach(s => s.destroy());
-        sortableInstances = [];
-        if(currentTab === 'active') {
-            const sortable = new Sortable(activeContainer, {
-                animation: 200,
-                handle: '.card:not(.add-card)',
-                onEnd: () => updateOrder('activeGrid')
-            });
-            sortableInstances.push(sortable);
-        } else {
-            const sortable = new Sortable(completedContainer, {
-                animation: 200,
-                handle: '.card',
-                onEnd: () => updateOrder('completedGrid')
-            });
-            sortableInstances.push(sortable);
-        }
+
+        // Инициализация Sortable
+        if (sortableInstance) sortableInstance.destroy();
+        const targetContainer = (currentTab === 'active') ? activeContainer : completedContainer;
+        sortableInstance = new Sortable(targetContainer, {
+            animation: 200,
+            handle: '.card:not(.add-card)',
+            onEnd: () => {
+                const containerId = (currentTab === 'active') ? 'activeGrid' : 'completedGrid';
+                updateOrder(containerId);
+            }
+        });
     }
-    
+
     async function loadAndRender() {
         try {
             allItems = await fetchData();
             renderGrids(allItems);
             document.querySelectorAll('.wishlist-grid').forEach(g => g.style.display = 'none');
-            if(currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
+            if (currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
             else document.getElementById('completedGrid').style.display = 'grid';
-        } catch(err) {
+        } catch (err) {
             console.error(err);
             document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки</div>';
         }
     }
-    
-    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
-    
+
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+
     // Модальное окно
     const modal = document.getElementById('editModal');
     document.getElementById('closeEditBtn').onclick = () => modal.style.display = 'none';
-    window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+    window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
     document.getElementById('saveEditBtn').onclick = async () => {
         const id = document.getElementById('editId').value;
         const title = document.getElementById('editTitle').value.trim();
-        if(!title) { alert('Введите название'); return; }
+        if (!title) { alert('Введите название'); return; }
         const wishData = {
             title,
             description: document.getElementById('editDesc').value,
@@ -488,12 +479,15 @@
             owner: document.getElementById('editOwner').value
         };
         let success;
-        if(id === '') success = await addWish(wishData);
+        if (id === '') success = await addWish(wishData);
         else success = await updateWish(parseInt(id), wishData);
-        if(success) { modal.style.display = 'none'; loadAndRender(); }
-        else alert('Ошибка');
+        if (success) {
+            modal.style.display = 'none';
+        } else {
+            alert('Ошибка при сохранении');
+        }
     };
-    
+
     // Фильтры
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -506,14 +500,14 @@
     // Табы
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            if(currentTab === btn.dataset.tab) return;
+            if (currentTab === btn.dataset.tab) return;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTab = btn.dataset.tab;
             loadAndRender();
         });
     });
-    
+
     loadPrintModes();
     loadAndRender();
     setInterval(loadAndRender, 20000);
