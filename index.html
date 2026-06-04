@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Вишлист — мечты сбываются</title>
+    <title>Вишлист — для нас двоих</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -33,53 +33,50 @@
             display: inline-block;
             padding-bottom: 6px;
         }
+        
         /* Фильтры */
         .filters {
             display: flex;
             justify-content: center;
             gap: 1rem;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
         .filter-btn {
             background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(12px);
+            backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.8);
             padding: 0.6rem 1.5rem;
             border-radius: 60px;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            color: #1e3a5f;
             transition: 0.2s;
+            color: #1e3a5f;
         }
         .filter-btn.active {
             background: #1e3a5f;
             color: white;
-            box-shadow: 0 8px 20px rgba(30,58,95,0.25);
+            box-shadow: 0 4px 12px rgba(30,58,95,0.2);
         }
-        .tabs {
-            display: flex;
-            justify-content: center;
-            gap: 1.2rem;
-            margin-bottom: 2rem;
-        }
+        
+        .tabs { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 2rem; }
         .tab-btn {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255,255,255,0.8);
-            padding: 0.8rem 2.2rem;
+            padding: 0.7rem 2rem;
             border-radius: 60px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             color: #1e3a5f;
-            transition: 0.2s;
         }
         .tab-btn.active {
             background: #1e3a5f;
             color: white;
-            box-shadow: 0 8px 20px rgba(30,58,95,0.25);
         }
+        
         .wishlist-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(280px, 1fr));
@@ -88,35 +85,35 @@
         @media (max-width: 1000px) { .wishlist-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px) { .wishlist-grid { grid-template-columns: 1fr; } }
         
-        /* Стили карточек в зависимости от владельца */
+        /* Карточки с цветами в зависимости от owner */
         .card {
-            background: rgba(255,255,255,0.95);
             border-radius: 32px;
             overflow: hidden;
             box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
             transition: 0.35s;
             display: flex;
             flex-direction: column;
-            border: 1px solid rgba(255,255,255,0.6);
+            border: 2px solid;
             position: relative;
         }
-        /* Владелец: me (голубой) */
-        .card.owner-me {
-            background: #e6f0fa;
-            border-left: 6px solid #1e88e5;
-        }
-        /* Владелец: wife (розовый) */
-        .card.owner-wife {
-            background: #fdeef4;
-            border-left: 6px solid #e91e63;
-        }
-        /* Если owner не указан или общий - нейтральный */
-        .card.owner-neutral {
-            background: #f5f5f5;
-            border-left: 6px solid #9e9e9e;
-        }
         .card:hover { transform: translateY(-8px) scale(1.01); }
-        .card.completed { opacity: 0.75; background: #ecf1f7; filter: grayscale(0.08); }
+        /* Стили для owner me (голубая) */
+        .card.owner-me {
+            background: #e0f2fe;
+            border-color: #7ab3c8;
+        }
+        /* Стили для owner wife (розовая) */
+        .card.owner-wife {
+            background: #ffe4e6;
+            border-color: #e6a0b0;
+        }
+        /* Стили для owner common (нейтральная) */
+        .card.owner-common {
+            background: #f3f4f6;
+            border-color: #9ca3af;
+        }
+        
+        .card.completed { opacity: 0.7; filter: grayscale(0.1); }
         .card.completed .card-title, .card.completed .card-desc, .card.completed .price { text-decoration: line-through; }
         .card.completed .buy-link { background: #7f8c8d; pointer-events: none; opacity: 0.7; }
         .completed-badge {
@@ -133,20 +130,7 @@
         }
         .card.completed .completed-badge { display: inline-flex; }
         
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 0.8rem 0 0.5rem;
-            padding: 6px 0;
-            border-top: 1px solid #e2edf7;
-            font-size: 0.85rem;
-            font-weight: 500;
-            cursor: pointer;
-            width: fit-content;
-        }
-        .checkbox-wrapper input { width: 18px; height: 18px; cursor: pointer; accent-color: #1e3a5f; }
-        
+        /* Кнопки действий (редактировать, удалить, смена владельца) */
         .card-actions {
             position: absolute;
             top: 12px;
@@ -155,7 +139,7 @@
             gap: 8px;
             z-index: 10;
         }
-        .print-btn, .edit-btn, .owner-btn {
+        .action-btn {
             background: rgba(255,255,240,0.9);
             backdrop-filter: blur(4px);
             padding: 5px 10px;
@@ -169,7 +153,25 @@
             border: 1px solid #d4deec;
             transition: 0.2s;
         }
-        .print-btn:hover, .edit-btn:hover, .owner-btn:hover { background: #ffe5b4; transform: scale(1.02); }
+        .action-btn:hover { background: #ffe5b4; transform: scale(1.02); }
+        .delete-btn:hover { background: #ffb3b3; }
+        
+        /* Кнопка для переключения владельца */
+        .owner-toggle {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(255,255,240,0.9);
+            padding: 5px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            z-index: 10;
+            border: 1px solid #d4deec;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         .print-badge {
             display: none;
             position: absolute;
@@ -192,14 +194,12 @@
         
         .card-img {
             width: 100%;
-            height: 280px;
+            height: 250px;
             object-fit: cover;
-            transition: 0.4s;
         }
-        .card:hover .card-img { transform: scale(1.02); }
         .no-image {
             background: #e2e8f0;
-            height: 280px;
+            height: 250px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -207,18 +207,18 @@
             gap: 8px;
         }
         .card-content {
-            padding: 1.5rem 1.3rem 1.6rem;
+            padding: 1.2rem 1.2rem 1.5rem;
             flex: 1;
             display: flex;
             flex-direction: column;
         }
-        .card-title { font-size: 1.45rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .card-desc { font-size: 0.9rem; color: #4a627a; margin-bottom: 1rem; line-height: 1.4; }
+        .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .card-desc { font-size: 0.85rem; color: #4a627a; margin-bottom: 0.8rem; line-height: 1.4; }
         .price {
             font-weight: 700;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
             color: #1f4870;
-            margin: 0.6rem 0 0;
+            margin: 0.4rem 0 0;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -228,40 +228,34 @@
             background: #1f4870;
             color: white;
             text-decoration: none;
-            padding: 11px 18px;
+            padding: 8px 16px;
             border-radius: 60px;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            margin-top: 0.8rem;
-            transition: 0.2s;
+            gap: 8px;
+            margin-top: 0.6rem;
         }
-        .buy-link:hover { background: #0f2f4a; transform: translateY(-2px); }
-        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0.6rem 0 0.3rem;
+            padding-top: 6px;
+            border-top: 1px solid #e2edf7;
+        }
         .add-card {
-            background: rgba(255,255,255,0.5);
-            backdrop-filter: blur(4px);
+            background: rgba(255,255,255,0.6);
             border: 2px dashed #8fa4c2;
             cursor: pointer;
             justify-content: center;
             align-items: center;
             text-align: center;
-            transition: 0.2s;
         }
         .add-card:hover { background: rgba(255,255,240,0.9); transform: scale(1.02); }
-        .add-card-content {
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            color: #2c3e66;
-        }
+        .add-card-content { padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; color: #2c3e66; }
         .add-card-content i { font-size: 3rem; }
-        .add-card-content span { font-size: 1.2rem; font-weight: 600; }
-        
         .modal {
             display: none;
             position: fixed;
@@ -281,12 +275,10 @@
             padding: 2rem;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
-        .modal-content h3 { font-size: 1.8rem; margin-bottom: 1rem; }
         .modal-content input, .modal-content textarea, .modal-content select {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             margin: 8px 0;
             border-radius: 60px;
             border: 1px solid #cbd5e1;
@@ -296,172 +288,119 @@
             background: #1f4870;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border-radius: 60px;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
         .close-btn { background: #ccc !important; margin-left: 10px; }
-        .footer-note {
-            text-align: center;
-            margin-top: 3rem;
-            padding: 1rem;
-            font-size: 0.85rem;
-            color: #5b6e86;
-            background: rgba(255,255,245,0.7);
-            backdrop-filter: blur(4px);
-            border-radius: 80px;
-            width: fit-content;
-            margin: 2rem auto 0;
-        }
-        .loading, .empty-message {
-            text-align: center;
-            padding: 3rem;
-            font-size: 1.1rem;
-            color: #5e7c9c;
-            background: rgba(255,255,245,0.5);
-            border-radius: 60px;
-        }
+        .footer-note { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: #5b6e86; }
+        .loading, .empty-message { text-align: center; padding: 2rem; color: #5e7c9c; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="hero">
         <h1><i class="fas fa-star-of-life"></i> Список желаний <i class="fas fa-gift"></i></h1>
-        <div class="subhead"><i class="fas fa-check-circle"></i> отмечайте исполненное — оно перемещается в отдельный раздел</div>
+        <div class="subhead"><i class="fas fa-check-circle"></i> отмечайте исполненное — оно перемещается</div>
     </div>
     
     <!-- Фильтры по владельцу -->
     <div class="filters">
         <button class="filter-btn active" data-filter="all">👥 Все желания</button>
-        <button class="filter-btn" data-filter="me">👤 Мои</button>
-        <button class="filter-btn" data-filter="wife">👩 Жены</button>
+        <button class="filter-btn" data-filter="me">👨 Мои желания</button>
+        <button class="filter-btn" data-filter="wife">👩 Желания жены</button>
+        <button class="filter-btn" data-filter="common">🤝 Общие</button>
     </div>
     
     <div class="tabs">
-        <button class="tab-btn active" data-tab="active"><i class="fas fa-heart"></i> Активные</button>
-        <button class="tab-btn" data-tab="completed"><i class="fas fa-check-double"></i> Исполненные</button>
+        <button class="tab-btn active" data-tab="active">📌 Активные</button>
+        <button class="tab-btn" data-tab="completed">✅ Исполненные</button>
     </div>
-    <div id="activeGrid" class="wishlist-grid"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
-    <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading"><i class="fas fa-spinner fa-pulse"></i> Загрузка...</div></div>
-    <div class="footer-note"><i class="fas fa-database"></i> Данные из Google Таблицы • синхронизация в реальном времени</div>
+    
+    <div id="activeGrid" class="wishlist-grid"><div class="loading">⏳ Загрузка...</div></div>
+    <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading">⏳ Загрузка...</div></div>
+    <div class="footer-note">🔹 Голубые — ваши, розовые — для жены, серые — общие. Нажмите на иконку 👤, чтобы сменить владельца. Корзина — удалить.</div>
 </div>
 
 <div id="editModal" class="modal">
     <div class="modal-content">
-        <h3 id="modalTitle">✏️ Редактировать хотелку</h3>
+        <h3 id="modalTitle">✏️ Редактировать</h3>
         <input type="text" id="editId" style="display:none;">
         <input type="text" id="editTitle" placeholder="Название *">
         <textarea id="editDesc" placeholder="Описание" rows="2"></textarea>
-        <input type="text" id="editPrice" placeholder="Цена, например 1500 ₽">
-        <input type="text" id="editImageUrl" placeholder="Ссылка на картинку (URL)">
-        <input type="text" id="editShopLink" placeholder="Ссылка на покупку (URL)">
+        <input type="text" id="editPrice" placeholder="Цена">
+        <input type="text" id="editImageUrl" placeholder="Ссылка на картинку">
+        <input type="text" id="editShopLink" placeholder="Ссылка на покупку">
         <input type="text" id="editButtonText" placeholder="Текст на кнопке" value="Купить">
         <select id="editOwner">
-            <option value="me">👤 Моё желание</option>
+            <option value="me">👨 Моё желание</option>
             <option value="wife">👩 Желание жены</option>
+            <option value="common">🤝 Общее</option>
         </select>
-        <div style="margin-top: 1rem;">
-            <button id="saveEditBtn">💾 Сохранить</button>
-            <button id="closeEditBtn" class="close-btn">Отмена</button>
-        </div>
+        <div><button id="saveEditBtn">💾 Сохранить</button><button id="closeEditBtn" class="close-btn">Отмена</button></div>
     </div>
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxUoA89HDqLBb3U8RO7tQyLOUzmbeec-20hLVbUyLozS0_YsoX16HqBOQUNBE122DUa/exec';  // ЗАМЕНИТЕ НА ВАШ НОВЫЙ URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw9Zp68GnVnqLcL8LWvS_vASitmCtBT868zzmDOqYWzNbAofPCg1tm6nIdPMnnbkIiz/exec';
     let allItems = [];
     let currentTab = 'active';
-    let currentFilter = 'all';  // 'all', 'me', 'wife'
+    let currentFilter = 'all';
     let printModeIds = [];
     
-    function loadPrintModes() {
-        const saved = localStorage.getItem('wishlist_print_modes');
-        if (saved) printModeIds = JSON.parse(saved);
-        else printModeIds = [];
-    }
-    function savePrintModes() {
-        localStorage.setItem('wishlist_print_modes', JSON.stringify(printModeIds));
-    }
+    function loadPrintModes() { const saved = localStorage.getItem('wishlist_print_modes'); if(saved) printModeIds = JSON.parse(saved); else printModeIds = []; }
+    function savePrintModes() { localStorage.setItem('wishlist_print_modes', JSON.stringify(printModeIds)); }
     
     async function fetchData() {
         const resp = await fetch(API_URL);
-        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const items = await resp.json();
-        return items.map(item => ({
-            ...item,
-            completed: (item.completed === 'TRUE' || item.completed === true),
-            owner: item.owner || 'me'   // по умолчанию me
-        }));
+        return items.map(item => ({ ...item, completed: (item.completed === 'TRUE' || item.completed === true) }));
     }
     
     async function saveCompleted(id, completed) {
-        const value = completed ? 'TRUE' : 'FALSE';
-        await fetch(`${API_URL}?id=${id}&completed=${value}`);
+        await fetch(`${API_URL}?id=${id}&completed=${completed?'TRUE':'FALSE'}`);
         setTimeout(() => loadAndRender(), 300);
+    }
+    
+    async function updateWish(id, wishData) {
+        const params = new URLSearchParams({ update:'1', id, ...wishData });
+        const resp = await fetch(`${API_URL}?${params.toString()}`);
+        const result = await resp.json();
+        return result.success;
+    }
+    
+    async function addWish(wishData) {
+        const params = new URLSearchParams({ add:'1', ...wishData });
+        const resp = await fetch(`${API_URL}?${params.toString()}`);
+        const result = await resp.json();
+        return result.success;
+    }
+    
+    async function deleteWish(id) {
+        if(!confirm('Удалить хотелку?')) return false;
+        const resp = await fetch(`${API_URL}?delete=1&id=${id}`);
+        const result = await resp.json();
+        if(result.success) loadAndRender();
+        return result.success;
     }
     
     async function setOwner(id, owner) {
         await fetch(`${API_URL}?setOwner=1&id=${id}&owner=${owner}`);
-        setTimeout(() => loadAndRender(), 300);
-    }
-    
-    async function addWish(wishData) {
-        const params = new URLSearchParams({
-            add: '1',
-            title: wishData.title,
-            description: wishData.description || '',
-            price: wishData.price || '',
-            imageUrl: wishData.imageUrl || '',
-            shopLink: wishData.shopLink || '',
-            buttonText: wishData.buttonText || 'Купить',
-            owner: wishData.owner || 'me'
-        });
-        const resp = await fetch(`${API_URL}?${params.toString()}`);
-        const result = await resp.json();
-        return result.success;
-    }
-    
-    async function updateWish(id, wishData) {
-        const params = new URLSearchParams({
-            update: '1',
-            id: id,
-            title: wishData.title,
-            description: wishData.description || '',
-            price: wishData.price || '',
-            imageUrl: wishData.imageUrl || '',
-            shopLink: wishData.shopLink || '',
-            buttonText: wishData.buttonText || 'Купить',
-            owner: wishData.owner || 'me'
-        });
-        const resp = await fetch(`${API_URL}?${params.toString()}`);
-        const result = await resp.json();
-        return result.success;
+        loadAndRender();
     }
     
     function togglePrintMode(card, id) {
-        if (card.classList.contains('print-mode')) {
+        if(card.classList.contains('print-mode')) {
             card.classList.remove('print-mode');
             printModeIds = printModeIds.filter(pid => pid !== id);
         } else {
             card.classList.add('print-mode');
-            if (!printModeIds.includes(id)) printModeIds.push(id);
+            if(!printModeIds.includes(id)) printModeIds.push(id);
         }
         savePrintModes();
-    }
-    
-    function openAddModal() {
-        document.getElementById('editId').value = '';
-        document.getElementById('editTitle').value = '';
-        document.getElementById('editDesc').value = '';
-        document.getElementById('editPrice').value = '';
-        document.getElementById('editImageUrl').value = '';
-        document.getElementById('editShopLink').value = '';
-        document.getElementById('editButtonText').value = 'Купить';
-        document.getElementById('editOwner').value = 'me';
-        document.getElementById('modalTitle').innerText = '➕ Новая хотелка';
-        document.getElementById('editModal').style.display = 'flex';
     }
     
     function openEditModal(item) {
@@ -477,67 +416,61 @@
         document.getElementById('editModal').style.display = 'flex';
     }
     
-    function filterItems(items) {
-        if (currentFilter === 'all') return items;
-        return items.filter(item => item.owner === currentFilter);
-    }
-    
     function renderGrids(items) {
         const activeContainer = document.getElementById('activeGrid');
         const completedContainer = document.getElementById('completedGrid');
-        const filtered = filterItems(items);
+        let filtered = items;
+        if(currentFilter !== 'all') filtered = items.filter(i => i.owner === currentFilter);
         const activeItems = filtered.filter(i => !i.completed);
         const completedItems = filtered.filter(i => i.completed);
+        
         activeContainer.innerHTML = '';
         completedContainer.innerHTML = '';
         
-        // Карточка добавления только в активных и если фильтр не "жена" (можно разрешить всегда, но логичнее показывать только если фильтр "все" или "мои", но пусть будет для всех)
-        if (currentTab === 'active' && currentFilter !== 'wife') {
+        if(currentTab === 'active') {
             const addCard = document.createElement('div');
             addCard.className = 'card add-card';
             addCard.innerHTML = `<div class="add-card-content"><i class="fas fa-plus-circle"></i><span>Добавить хотелку</span></div>`;
-            addCard.addEventListener('click', openAddModal);
+            addCard.onclick = () => {
+                document.getElementById('editId').value = '';
+                document.getElementById('editTitle').value = '';
+                document.getElementById('editDesc').value = '';
+                document.getElementById('editPrice').value = '';
+                document.getElementById('editImageUrl').value = '';
+                document.getElementById('editShopLink').value = '';
+                document.getElementById('editButtonText').value = 'Купить';
+                document.getElementById('editOwner').value = 'me';
+                document.getElementById('modalTitle').innerText = '➕ Новая хотелка';
+                document.getElementById('editModal').style.display = 'flex';
+            };
             activeContainer.appendChild(addCard);
-        }
-        
-        if (activeItems.length === 0 && currentTab === 'active') {
-            if (activeContainer.children.length === 0 || (activeContainer.children.length === 1 && currentFilter !== 'wife')) 
-                activeContainer.innerHTML += '<div class="empty-message"><i class="fas fa-cloud-moon"></i>Нет активных желаний по выбранному фильтру</div>';
+            if(activeItems.length === 0) activeContainer.innerHTML += '<div class="empty-message">📭 Нет активных желаний</div>';
+            else activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
         } else {
-            activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
-        }
-        
-        if (completedItems.length === 0) {
-            completedContainer.innerHTML = '<div class="empty-message"><i class="fas fa-check-circle"></i>Нет исполненных желаний по выбранному фильтру</div>';
-        } else {
-            completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
+            if(completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
+            else completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
         }
     }
     
     function createCardElement(item) {
         const card = document.createElement('div');
-        card.className = 'card';
-        if (item.completed) card.classList.add('completed');
-        // Класс владельца для стилизации
-        if (item.owner === 'me') card.classList.add('owner-me');
-        else if (item.owner === 'wife') card.classList.add('owner-wife');
-        else card.classList.add('owner-neutral');
+        card.className = `card owner-${item.owner || 'me'}`;
+        if(item.completed) card.classList.add('completed');
+        if(printModeIds.includes(item.id)) card.classList.add('print-mode');
         
-        if (printModeIds.includes(item.id)) card.classList.add('print-mode');
-        
-        let imgHtml = (item.imageUrl && item.imageUrl.trim()) ? 
-            `<img class="card-img" src="${escapeHtml(item.imageUrl)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" loading="lazy"><div class="no-image" style="display: none;"><i class="fas fa-image"></i> фото не загрузилось</div>` :
-            `<div class="no-image"><i class="fas fa-camera"></i> нет фото</div>`;
-        
+        let imgHtml = (item.imageUrl && item.imageUrl.trim()) ?
+            `<img class="card-img" src="${escapeHtml(item.imageUrl)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" loading="lazy"><div class="no-image" style="display:none;">📷 нет фото</div>` :
+            `<div class="no-image">📷 нет фото</div>`;
         let priceText = String(item.price).trim();
-        if (!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
+        if(!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
         
         card.innerHTML = `
             <div class="card-actions">
-                <div class="print-btn" title="Пометить на печать"><i class="fas fa-print"></i> Распечатай</div>
-                <div class="edit-btn" title="Редактировать"><i class="fas fa-edit"></i> Изменить</div>
-                <div class="owner-btn" title="Сменить владельца"><i class="fas fa-user-friends"></i> ${item.owner === 'me' ? 'Моё' : 'Жены'}</div>
+                <div class="action-btn print-btn" title="Пометить на печать"><i class="fas fa-print"></i></div>
+                <div class="action-btn edit-btn" title="Редактировать"><i class="fas fa-edit"></i></div>
+                <div class="action-btn delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i></div>
             </div>
+            <div class="owner-toggle" title="Сменить владельца"><i class="fas fa-user-friends"></i> <span>${item.owner === 'me' ? 'Моё' : (item.owner === 'wife' ? 'Для жены' : 'Общее')}</span></div>
             <div class="print-badge"><i class="fas fa-print"></i> РАСПЕЧАТАТЬ!</div>
             ${imgHtml}
             <div class="card-content">
@@ -546,7 +479,7 @@
                 <div class="price"><i class="fas fa-tag"></i> ${escapeHtml(priceText)}</div>
                 <div class="completed-badge"><i class="fas fa-check-circle"></i> Исполнено!</div>
                 <div class="checkbox-wrapper">
-                    <input type="checkbox" class="complete-chk" data-id="${item.id}" ${item.completed ? 'checked' : ''}>
+                    <input type="checkbox" class="complete-chk" ${item.completed ? 'checked' : ''}>
                     <span>Исполнено</span>
                 </div>
                 <a href="${escapeHtml(item.shopLink)}" class="buy-link" target="_blank" rel="noopener noreferrer">
@@ -560,26 +493,18 @@
             chk.disabled = true;
             await saveCompleted(item.id, chk.checked);
         });
-        
-        const printBtn = card.querySelector('.print-btn');
-        printBtn.addEventListener('click', (e) => {
+        card.querySelector('.print-btn').onclick = (e) => { e.stopPropagation(); togglePrintMode(card, item.id); };
+        card.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); openEditModal(item); };
+        card.querySelector('.delete-btn').onclick = async (e) => { e.stopPropagation(); await deleteWish(item.id); };
+        const ownerToggle = card.querySelector('.owner-toggle');
+        ownerToggle.onclick = async (e) => {
             e.stopPropagation();
-            togglePrintMode(card, item.id);
-        });
-        
-        const editBtn = card.querySelector('.edit-btn');
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openEditModal(item);
-        });
-        
-        const ownerBtn = card.querySelector('.owner-btn');
-        ownerBtn.addEventListener('click', async (e) => {
-            e.stopPropagation();
-            const newOwner = item.owner === 'me' ? 'wife' : 'me';
+            let newOwner = 'me';
+            if(item.owner === 'me') newOwner = 'wife';
+            else if(item.owner === 'wife') newOwner = 'common';
+            else newOwner = 'me';
             await setOwner(item.id, newOwner);
-        });
-        
+        };
         return card;
     }
     
@@ -588,29 +513,21 @@
             allItems = await fetchData();
             renderGrids(allItems);
             document.querySelectorAll('.wishlist-grid').forEach(g => g.style.display = 'none');
-            if (currentTab === 'active') {
-                document.getElementById('activeGrid').style.display = 'grid';
-            } else {
-                document.getElementById('completedGrid').style.display = 'grid';
-            }
-        } catch (err) {
-            console.error(err);
-            document.getElementById('activeGrid').innerHTML = '<div class="loading"><i class="fas fa-exclamation-triangle"></i> Ошибка загрузки. Проверьте URL скрипта.</div>';
-        }
+            if(currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
+            else document.getElementById('completedGrid').style.display = 'grid';
+        } catch(err) { console.error(err); document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки</div>'; }
     }
     
-    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+    function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     
     // Модальное окно
     const modal = document.getElementById('editModal');
-    const closeModal = () => modal.style.display = 'none';
-    document.getElementById('closeEditBtn').addEventListener('click', closeModal);
-    window.onclick = (event) => { if (event.target === modal) closeModal(); };
-    
-    document.getElementById('saveEditBtn').addEventListener('click', async () => {
+    document.getElementById('closeEditBtn').onclick = () => modal.style.display = 'none';
+    window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
+    document.getElementById('saveEditBtn').onclick = async () => {
         const id = document.getElementById('editId').value;
         const title = document.getElementById('editTitle').value.trim();
-        if (!title) { alert('Введите название'); return; }
+        if(!title) { alert('Введите название'); return; }
         const wishData = {
             title,
             description: document.getElementById('editDesc').value,
@@ -621,20 +538,11 @@
             owner: document.getElementById('editOwner').value
         };
         let success;
-        if (id === '') {
-            success = await addWish(wishData);
-            if (success) alert('Хотелка добавлена!');
-        } else {
-            success = await updateWish(parseInt(id), wishData);
-            if (success) alert('Хотелка обновлена!');
-        }
-        if (success) {
-            closeModal();
-            loadAndRender();
-        } else {
-            alert('Ошибка при сохранении');
-        }
-    });
+        if(id === '') success = await addWish(wishData);
+        else success = await updateWish(parseInt(id), wishData);
+        if(success) { modal.style.display = 'none'; loadAndRender(); }
+        else alert('Ошибка');
+    };
     
     // Фильтры
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -649,19 +557,11 @@
     // Табы
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            if (currentTab === btn.dataset.tab) return;
+            if(currentTab === btn.dataset.tab) return;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentTab = btn.dataset.tab;
-            const ag = document.getElementById('activeGrid');
-            const cg = document.getElementById('completedGrid');
-            ag.style.opacity = '0';
-            cg.style.opacity = '0';
-            setTimeout(() => {
-                if (currentTab === 'active') { ag.style.display = 'grid'; cg.style.display = 'none'; }
-                else { ag.style.display = 'none'; cg.style.display = 'grid'; }
-                setTimeout(() => { ag.style.opacity = '1'; cg.style.opacity = '1'; loadAndRender(); }, 20);
-            }, 100);
+            loadAndRender();
         });
     });
     
