@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Вишлист — для нас двоих</title>
+    <title>Вишлист — перетаскивание и синхронизация</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- SortableJS для перетаскивания -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -14,7 +16,7 @@
             padding: 2rem 1.5rem;
         }
         .container { max-width: 1400px; margin: 0 auto; }
-        .hero { text-align: center; margin-bottom: 3rem; }
+        .hero { text-align: center; margin-bottom: 2rem; }
         .hero h1 {
             font-size: 3rem;
             font-weight: 800;
@@ -23,63 +25,43 @@
             -webkit-background-clip: text;
             color: transparent;
             display: block;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
         }
         .hero h1 i { font-size: 2.8rem; color: #e9b35f; margin: 0 0.25rem; }
         .subhead {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #4c6f8c;
             border-bottom: 2px dashed rgba(100,120,150,0.3);
             display: inline-block;
             padding-bottom: 6px;
         }
-        
         .filters {
             display: flex;
             justify-content: center;
             gap: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             flex-wrap: wrap;
         }
-        .filter-btn {
+        .filter-btn, .tab-btn {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.8);
-            padding: 0.6rem 1.5rem;
+            padding: 0.5rem 1.5rem;
             border-radius: 60px;
             font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: 0.2s;
             color: #1e3a5f;
         }
-        .filter-btn.active {
-            background: #1e3a5f;
-            color: white;
-            box-shadow: 0 4px 12px rgba(30,58,95,0.2);
-        }
-        
-        .tabs { display: flex; justify-content: center; gap: 1.2rem; margin-bottom: 2rem; }
-        .tab-btn {
-            background: rgba(255,255,255,0.6);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.8);
-            padding: 0.7rem 2rem;
-            border-radius: 60px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: #1e3a5f;
-        }
-        .tab-btn.active {
+        .filter-btn.active, .tab-btn.active {
             background: #1e3a5f;
             color: white;
         }
-        
+        .tabs { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
         .wishlist-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(280px, 1fr));
-            gap: 2rem;
+            gap: 1.5rem;
         }
         @media (max-width: 1000px) { .wishlist-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px) { .wishlist-grid { grid-template-columns: 1fr; } }
@@ -88,17 +70,17 @@
             border-radius: 32px;
             overflow: hidden;
             box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);
-            transition: 0.35s;
+            transition: 0.2s;
             display: flex;
             flex-direction: column;
             border: 2px solid;
             position: relative;
+            cursor: grab;
         }
-        .card:hover { transform: translateY(-8px) scale(1.01); }
+        .card:active { cursor: grabbing; }
         .card.owner-me { background: #e0f2fe; border-color: #7ab3c8; }
         .card.owner-wife { background: #ffe4e6; border-color: #e6a0b0; }
         .card.owner-common { background: #f3f4f6; border-color: #9ca3af; }
-        
         .card.completed { opacity: 0.7; filter: grayscale(0.1); }
         .card.completed .card-title, .card.completed .card-desc, .card.completed .price { text-decoration: line-through; }
         .card.completed .buy-link { background: #7f8c8d; pointer-events: none; opacity: 0.7; }
@@ -110,109 +92,77 @@
             padding: 4px 12px;
             border-radius: 40px;
             width: fit-content;
-            margin-top: 10px;
-            align-items: center;
-            gap: 6px;
+            margin-top: 8px;
         }
-        .card.completed .completed-badge { display: inline-flex; }
+        .card.completed .completed-badge { display: inline-flex; align-items: center; gap: 5px; }
         
         .card-actions {
             position: absolute;
-            top: 12px;
-            left: 12px;
+            top: 10px;
+            left: 10px;
             display: flex;
-            gap: 8px;
+            gap: 6px;
             z-index: 10;
         }
         .action-btn {
             background: rgba(255,255,240,0.9);
             backdrop-filter: blur(4px);
-            padding: 5px 10px;
+            padding: 4px 8px;
             border-radius: 30px;
             font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
             border: 1px solid #d4deec;
-            transition: 0.2s;
         }
-        .action-btn:hover { background: #ffe5b4; transform: scale(1.02); }
+        .action-btn:hover { background: #ffe5b4; }
         .delete-btn:hover { background: #ffb3b3; }
-        
+        .owner-switch {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,240,0.9);
+            backdrop-filter: blur(4px);
+            padding: 4px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            z-index: 10;
+        }
         .print-badge {
             display: none;
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.7);
             color: white;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: bold;
             align-items: center;
             justify-content: center;
-            z-index: 20;
             border-radius: 32px;
             pointer-events: none;
-            backdrop-filter: blur(2px);
         }
         .card.print-mode .print-badge { display: flex; }
-        
-        .card-img {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-        }
-        .no-image {
-            background: #e2e8f0;
-            height: 250px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #5a6e8a;
-            gap: 8px;
-        }
-        .card-content {
-            padding: 1.2rem 1.2rem 1.5rem;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .card-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.4rem; }
-        .card-desc { font-size: 0.85rem; color: #4a627a; margin-bottom: 0.8rem; line-height: 1.4; }
-        .price {
-            font-weight: 700;
-            font-size: 1.2rem;
-            color: #1f4870;
-            margin: 0.4rem 0 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .price i { color: #e9b35f; }
+        .card-img { width: 100%; height: 220px; object-fit: cover; }
+        .no-image { background: #e2e8f0; height: 220px; display: flex; align-items: center; justify-content: center; color: #5a6e8a; gap: 5px; }
+        .card-content { padding: 1rem; flex: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem; }
+        .card-desc { font-size: 0.8rem; color: #4a627a; margin-bottom: 0.6rem; }
+        .price { font-weight: 700; font-size: 1.1rem; color: #1f4870; margin: 0.3rem 0; display: flex; align-items: center; gap: 5px; }
         .buy-link {
-            background: #1f4870;
-            color: white;
-            text-decoration: none;
-            padding: 8px 16px;
-            border-radius: 60px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 0.6rem;
+            background: #1f4870; color: white; text-decoration: none; padding: 6px 12px;
+            border-radius: 60px; font-weight: 600; font-size: 0.8rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            margin-top: 0.5rem;
         }
         .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin: 0.6rem 0 0.3rem;
-            padding-top: 6px;
-            border-top: 1px solid #e2edf7;
+            display: flex; align-items: center; gap: 6px; margin: 0.5rem 0 0;
+            padding-top: 5px; border-top: 1px solid #e2edf7;
         }
         .add-card {
             background: rgba(255,255,255,0.6);
@@ -222,16 +172,12 @@
             align-items: center;
             text-align: center;
         }
-        .add-card:hover { background: rgba(255,255,240,0.9); transform: scale(1.02); }
-        .add-card-content { padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; color: #2c3e66; }
-        .add-card-content i { font-size: 3rem; }
+        .add-card-content { padding: 1.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.8rem; }
         .modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             backdrop-filter: blur(4px);
             z-index: 1000;
@@ -241,55 +187,45 @@
         .modal-content {
             background: white;
             border-radius: 32px;
-            padding: 2rem;
+            padding: 1.5rem;
             max-width: 500px;
             width: 90%;
         }
         .modal-content input, .modal-content textarea, .modal-content select {
             width: 100%;
-            padding: 10px;
-            margin: 8px 0;
+            padding: 8px 12px;
+            margin: 6px 0;
             border-radius: 60px;
             border: 1px solid #cbd5e1;
-            font-family: inherit;
         }
         .modal-content button {
-            background: #1f4870;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 60px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 0.5rem;
+            background: #1f4870; color: white; border: none;
+            padding: 8px 16px; border-radius: 60px; cursor: pointer;
+            margin-top: 8px;
         }
-        .close-btn { background: #ccc !important; margin-left: 10px; }
-        .footer-note { text-align: center; margin-top: 3rem; font-size: 0.85rem; color: #5b6e86; }
-        .loading, .empty-message { text-align: center; padding: 2rem; color: #5e7c9c; }
+        .close-btn { background: #ccc !important; margin-left: 8px; }
+        .footer-note { text-align: center; margin-top: 2rem; font-size: 0.8rem; color: #5b6e86; }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="hero">
         <h1><i class="fas fa-star-of-life"></i> Список желаний <i class="fas fa-gift"></i></h1>
-        <div class="subhead"><i class="fas fa-check-circle"></i> отмечайте исполненное — оно перемещается</div>
+        <div class="subhead">Перетаскивайте карточки — порядок сохраняется для всех</div>
     </div>
-    
     <div class="filters">
-        <button class="filter-btn active" data-filter="all">👥 Все желания</button>
-        <button class="filter-btn" data-filter="me">👨 Мои желания</button>
-        <button class="filter-btn" data-filter="wife">👩 Желания жены</button>
+        <button class="filter-btn active" data-filter="all">👥 Все</button>
+        <button class="filter-btn" data-filter="me">👨 Мои</button>
+        <button class="filter-btn" data-filter="wife">👩 Жены</button>
         <button class="filter-btn" data-filter="common">🤝 Общие</button>
     </div>
-    
     <div class="tabs">
         <button class="tab-btn active" data-tab="active">📌 Активные</button>
         <button class="tab-btn" data-tab="completed">✅ Исполненные</button>
     </div>
-    
     <div id="activeGrid" class="wishlist-grid"><div class="loading">⏳ Загрузка...</div></div>
     <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading">⏳ Загрузка...</div></div>
-    <div class="footer-note">🔹 Голубые — ваши, розовые — для жены, серые — общие. Кнопка 👤 в верхней панели меняет владельца.</div>
+    <div class="footer-note">💡 Перетащите карточку мышью, чтобы изменить порядок. Сохраняется в Google Таблице.</div>
 </div>
 
 <div id="editModal" class="modal">
@@ -305,19 +241,22 @@
         <select id="editOwner">
             <option value="common">🤝 Общее</option>
             <option value="me">👨 Моё</option>
-            <option value="wife">👩 Жены</option>
+            <option value="wife">👩 Для жены</option>
         </select>
         <div><button id="saveEditBtn">💾 Сохранить</button><button id="closeEditBtn" class="close-btn">Отмена</button></div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxDq_R3h5pjjPAwQNTABHxg57YBy-fAIyfemA5mmMNpofAJWC0WmQ698Ne4qkIXUww1/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwrPoEUefuaoz9TlpKPEwEmlWYGPt5AACsRuJR3V2jCm_4RIEdQ3Tpk9vBSPlS-rxDn/exec';
     let allItems = [];
     let currentTab = 'active';
     let currentFilter = 'all';
     let printModeIds = [];
+    let sortableInstances = []; // для хранения Sortable объектов
     
+    // Загрузка сохранённых отметок печати
     function loadPrintModes() { const saved = localStorage.getItem('wishlist_print_modes'); if(saved) printModeIds = JSON.parse(saved); else printModeIds = []; }
     function savePrintModes() { localStorage.setItem('wishlist_print_modes', JSON.stringify(printModeIds)); }
     
@@ -360,6 +299,21 @@
         loadAndRender();
     }
     
+    // Обновление порядка карточек после перетаскивания
+    async function updateOrder(containerId) {
+        const container = document.getElementById(containerId);
+        const cards = container.querySelectorAll('.card:not(.add-card)'); // исключаем карточку-плюс
+        const orderData = Array.from(cards).map((card, idx) => {
+            const id = parseInt(card.dataset.id);
+            return { id, order: idx };
+        });
+        // Отправляем на сервер
+        await fetch(`${API_URL}?updateOrder=1&orderData=${JSON.stringify(orderData)}`);
+        // Не перезагружаем сразу, чтобы не было дерганья, но надо обновить порядок в allItems
+        // Просто перезагрузим данные через секунду
+        setTimeout(() => loadAndRender(), 300);
+    }
+    
     function togglePrintMode(card, id) {
         if(card.classList.contains('print-mode')) {
             card.classList.remove('print-mode');
@@ -384,48 +338,12 @@
         document.getElementById('editModal').style.display = 'flex';
     }
     
-    function renderGrids(items) {
-        const activeContainer = document.getElementById('activeGrid');
-        const completedContainer = document.getElementById('completedGrid');
-        let filtered = items;
-        if(currentFilter !== 'all') filtered = items.filter(i => (i.owner || 'common') === currentFilter);
-        const activeItems = filtered.filter(i => !i.completed);
-        const completedItems = filtered.filter(i => i.completed);
-        
-        activeContainer.innerHTML = '';
-        completedContainer.innerHTML = '';
-        
-        if(currentTab === 'active') {
-            const addCard = document.createElement('div');
-            addCard.className = 'card add-card';
-            addCard.innerHTML = `<div class="add-card-content"><i class="fas fa-plus-circle"></i><span>Добавить хотелку</span></div>`;
-            addCard.onclick = () => {
-                document.getElementById('editId').value = '';
-                document.getElementById('editTitle').value = '';
-                document.getElementById('editDesc').value = '';
-                document.getElementById('editPrice').value = '';
-                document.getElementById('editImageUrl').value = '';
-                document.getElementById('editShopLink').value = '';
-                document.getElementById('editButtonText').value = 'Купить';
-                document.getElementById('editOwner').value = 'common';
-                document.getElementById('modalTitle').innerText = '➕ Новая хотелка';
-                document.getElementById('editModal').style.display = 'flex';
-            };
-            activeContainer.appendChild(addCard);
-            if(activeItems.length === 0) activeContainer.innerHTML += '<div class="empty-message">📭 Нет активных желаний</div>';
-            else activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
-        } else {
-            if(completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
-            else completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
-        }
-    }
-    
-    function createCardElement(item) {
-        const owner = item.owner || 'common';
+    function createCardElement(item, isActive = true) {
         const card = document.createElement('div');
-        card.className = `card owner-${owner}`;
+        card.className = `card owner-${item.owner || 'common'}`;
         if(item.completed) card.classList.add('completed');
         if(printModeIds.includes(item.id)) card.classList.add('print-mode');
+        card.dataset.id = item.id;
         
         let imgHtml = (item.imageUrl && item.imageUrl.trim()) ?
             `<img class="card-img" src="${escapeHtml(item.imageUrl)}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" loading="lazy"><div class="no-image" style="display:none;">📷 нет фото</div>` :
@@ -436,10 +354,10 @@
         card.innerHTML = `
             <div class="card-actions">
                 <div class="action-btn print-btn" title="Пометить на печать"><i class="fas fa-print"></i></div>
-                <div class="action-btn owner-switch" title="Сменить владельца"><i class="fas fa-user-friends"></i> <span>${owner === 'me' ? 'Моё' : (owner === 'wife' ? 'Жены' : 'Общее')}</span></div>
                 <div class="action-btn edit-btn" title="Редактировать"><i class="fas fa-edit"></i></div>
                 <div class="action-btn delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i></div>
             </div>
+            <div class="owner-switch" title="Сменить владельца"><i class="fas fa-user-friends"></i> <span>${item.owner === 'me' ? 'Моё' : (item.owner === 'wife' ? 'Для жены' : 'Общее')}</span> 🔄</div>
             <div class="print-badge"><i class="fas fa-print"></i> РАСПЕЧАТАТЬ!</div>
             ${imgHtml}
             <div class="card-content">
@@ -465,16 +383,76 @@
         card.querySelector('.print-btn').onclick = (e) => { e.stopPropagation(); togglePrintMode(card, item.id); };
         card.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); openEditModal(item); };
         card.querySelector('.delete-btn').onclick = async (e) => { e.stopPropagation(); await deleteWish(item.id); };
-        const ownerSwitch = card.querySelector('.owner-switch');
-        ownerSwitch.onclick = async (e) => {
+        const ownerBtn = card.querySelector('.owner-switch');
+        ownerBtn.onclick = async (e) => {
             e.stopPropagation();
             let newOwner = 'common';
-            if(owner === 'common') newOwner = 'me';
-            else if(owner === 'me') newOwner = 'wife';
-            else if(owner === 'wife') newOwner = 'common';
+            if(item.owner === 'common') newOwner = 'me';
+            else if(item.owner === 'me') newOwner = 'wife';
+            else newOwner = 'common';
             await setOwner(item.id, newOwner);
         };
         return card;
+    }
+    
+    function renderGrids(items) {
+        const activeContainer = document.getElementById('activeGrid');
+        const completedContainer = document.getElementById('completedGrid');
+        
+        // Фильтрация по владельцу
+        let filtered = items;
+        if(currentFilter !== 'all') filtered = items.filter(i => (i.owner || 'common') === currentFilter);
+        const activeItems = filtered.filter(i => !i.completed);
+        const completedItems = filtered.filter(i => i.completed);
+        
+        activeContainer.innerHTML = '';
+        completedContainer.innerHTML = '';
+        
+        // Карточка добавления для активных
+        if(currentTab === 'active') {
+            const addCard = document.createElement('div');
+            addCard.className = 'card add-card';
+            addCard.innerHTML = `<div class="add-card-content"><i class="fas fa-plus-circle"></i><span>Добавить хотелку</span></div>`;
+            addCard.onclick = () => {
+                document.getElementById('editId').value = '';
+                document.getElementById('editTitle').value = '';
+                document.getElementById('editDesc').value = '';
+                document.getElementById('editPrice').value = '';
+                document.getElementById('editImageUrl').value = '';
+                document.getElementById('editShopLink').value = '';
+                document.getElementById('editButtonText').value = 'Купить';
+                document.getElementById('editOwner').value = 'common';
+                document.getElementById('modalTitle').innerText = '➕ Новая хотелка';
+                document.getElementById('editModal').style.display = 'flex';
+            };
+            activeContainer.appendChild(addCard);
+            activeItems.forEach(item => activeContainer.appendChild(createCardElement(item, true)));
+            if(activeItems.length === 0 && activeContainer.children.length === 1) {
+                activeContainer.innerHTML += '<div class="empty-message" style="text-align:center; padding:2rem;">📭 Нет активных желаний</div>';
+            }
+        } else {
+            completedItems.forEach(item => completedContainer.appendChild(createCardElement(item, false)));
+            if(completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
+        }
+        
+        // Инициализация перетаскивания
+        if(sortableInstances.length) sortableInstances.forEach(s => s.destroy());
+        sortableInstances = [];
+        if(currentTab === 'active') {
+            const sortable = new Sortable(activeContainer, {
+                animation: 200,
+                handle: '.card:not(.add-card)',
+                onEnd: () => updateOrder('activeGrid')
+            });
+            sortableInstances.push(sortable);
+        } else {
+            const sortable = new Sortable(completedContainer, {
+                animation: 200,
+                handle: '.card',
+                onEnd: () => updateOrder('completedGrid')
+            });
+            sortableInstances.push(sortable);
+        }
     }
     
     async function loadAndRender() {
@@ -484,11 +462,15 @@
             document.querySelectorAll('.wishlist-grid').forEach(g => g.style.display = 'none');
             if(currentTab === 'active') document.getElementById('activeGrid').style.display = 'grid';
             else document.getElementById('completedGrid').style.display = 'grid';
-        } catch(err) { console.error(err); document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки</div>'; }
+        } catch(err) {
+            console.error(err);
+            document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки</div>';
+        }
     }
     
     function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     
+    // Модальное окно
     const modal = document.getElementById('editModal');
     document.getElementById('closeEditBtn').onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
@@ -512,6 +494,7 @@
         else alert('Ошибка');
     };
     
+    // Фильтры
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -520,7 +503,7 @@
             loadAndRender();
         });
     });
-    
+    // Табы
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if(currentTab === btn.dataset.tab) return;
