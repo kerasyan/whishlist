@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Вишлист — перетаскивание и синхронизация</title>
+    <title>Вишлист — с перетаскиванием</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -238,7 +238,7 @@
     let currentTab = 'active';
     let currentFilter = 'all';
     let printModeIds = [];
-    let sortableInstance = null;
+    let sortable = null;
 
     function loadPrintModes() {
         const saved = localStorage.getItem('wishlist_print_modes');
@@ -254,13 +254,14 @@
         const items = await resp.json();
         return items.map(item => ({
             ...item,
-            completed: (item.completed === 'TRUE' || item.completed === true)
+            completed: (item.completed === 'TRUE' || item.completed === true),
+            owner: item.owner || 'common'
         }));
     }
 
     async function saveCompleted(id, completed) {
         await fetch(`${API_URL}?id=${id}&completed=${completed ? 'TRUE' : 'FALSE'}`);
-        await loadAndRender(); // сразу обновляем
+        await loadAndRender();
     }
 
     async function updateWish(id, wishData) {
@@ -289,7 +290,7 @@
 
     async function setOwner(id, owner) {
         await fetch(`${API_URL}?setOwner=1&id=${id}&owner=${owner}`);
-        await loadAndRender(); // перезагружаем после смены
+        await loadAndRender();
     }
 
     async function updateOrder(containerId) {
@@ -300,7 +301,7 @@
             order: idx
         }));
         await fetch(`${API_URL}?updateOrder=1&orderData=${JSON.stringify(orderData)}`);
-        await loadAndRender(); // обновляем порядок
+        await loadAndRender();
     }
 
     function togglePrintMode(card, id) {
@@ -433,10 +434,10 @@
             if (completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
         }
 
-        // Инициализация Sortable
-        if (sortableInstance) sortableInstance.destroy();
+        // Переинициализация Sortable
+        if (sortable) sortable.destroy();
         const targetContainer = (currentTab === 'active') ? activeContainer : completedContainer;
-        sortableInstance = new Sortable(targetContainer, {
+        sortable = new Sortable(targetContainer, {
             animation: 200,
             handle: '.card:not(.add-card)',
             onEnd: () => {
