@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Вишлист — с перетаскиванием</title>
+    <title>Вишлист — стабильная версия</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -59,9 +58,7 @@
             flex-direction: column;
             border: 2px solid;
             position: relative;
-            cursor: grab;
         }
-        .card:active { cursor: grabbing; }
         .card.owner-me { background: #e0f2fe; border-color: #7ab3c8; }
         .card.owner-wife { background: #ffe4e6; border-color: #e6a0b0; }
         .card.owner-common { background: #f3f4f6; border-color: #9ca3af; }
@@ -196,7 +193,7 @@
 <div class="container">
     <div class="hero">
         <h1><i class="fas fa-star-of-life"></i> Список желаний <i class="fas fa-gift"></i></h1>
-        <div class="subhead">Перетаскивайте карточки — порядок сохраняется для всех</div>
+        <div class="subhead">Управляйте желаниями, отмечайте исполненные</div>
     </div>
     <div class="filters">
         <button class="filter-btn active" data-filter="all">👥 Все</button>
@@ -210,7 +207,7 @@
     </div>
     <div id="activeGrid" class="wishlist-grid"><div class="loading">⏳ Загрузка...</div></div>
     <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading">⏳ Загрузка...</div></div>
-    <div class="footer-note">💡 Перетащите карточку мышью, чтобы изменить порядок. Сохраняется в Google Таблице.</div>
+    <div class="footer-note">🔹 Голубые — ваши, розовые — для жены, серые — общие. Нажмите на иконку 👤, чтобы сменить владельца.</div>
 </div>
 
 <div id="editModal" class="modal">
@@ -233,12 +230,11 @@
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzyLQYhouuhYiqdDcIekjnDF_MYDnRg8LLInyYMOedLuunLZvdfkPtWxprwLY8DKrNR/exec'; // ЗАМЕНИТЕ НА СВОЙ URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxBojr1YXovZxz-uqXA-jHfqtnnv5zyiqrIdHEIOvHBXhfnWtjC90WI93p2CWG2mv7N/exec'; // ЗАМЕНИТЕ
     let allItems = [];
     let currentTab = 'active';
     let currentFilter = 'all';
     let printModeIds = [];
-    let sortable = null;
 
     function loadPrintModes() {
         const saved = localStorage.getItem('wishlist_print_modes');
@@ -290,17 +286,6 @@
 
     async function setOwner(id, owner) {
         await fetch(`${API_URL}?setOwner=1&id=${id}&owner=${owner}`);
-        await loadAndRender();
-    }
-
-    async function updateOrder(containerId) {
-        const container = document.getElementById(containerId);
-        const cards = container.querySelectorAll('.card:not(.add-card)');
-        const orderData = Array.from(cards).map((card, idx) => ({
-            id: parseInt(card.dataset.id),
-            order: idx
-        }));
-        await fetch(`${API_URL}?updateOrder=1&orderData=${JSON.stringify(orderData)}`);
         await loadAndRender();
     }
 
@@ -408,7 +393,6 @@
         completedContainer.innerHTML = '';
 
         if (currentTab === 'active') {
-            // Карточка добавления
             const addCard = document.createElement('div');
             addCard.className = 'card add-card';
             addCard.innerHTML = `<div class="add-card-content"><i class="fas fa-plus-circle"></i><span>Добавить хотелку</span></div>`;
@@ -433,18 +417,6 @@
             completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
             if (completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
         }
-
-        // Переинициализация Sortable
-        if (sortable) sortable.destroy();
-        const targetContainer = (currentTab === 'active') ? activeContainer : completedContainer;
-        sortable = new Sortable(targetContainer, {
-            animation: 200,
-            handle: '.card:not(.add-card)',
-            onEnd: () => {
-                const containerId = (currentTab === 'active') ? 'activeGrid' : 'completedGrid';
-                updateOrder(containerId);
-            }
-        });
     }
 
     async function loadAndRender() {
@@ -456,7 +428,7 @@
             else document.getElementById('completedGrid').style.display = 'grid';
         } catch (err) {
             console.error(err);
-            document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки</div>';
+            document.getElementById('activeGrid').innerHTML = '<div class="loading">❌ Ошибка загрузки. Проверьте URL скрипта.</div>';
         }
     }
 
