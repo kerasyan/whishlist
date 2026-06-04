@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вишлист — финал</title>
+    <title>Вишлист — компактные кнопки</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -27,8 +27,38 @@
         }
         .hero h1 i { font-size: 2.8rem; color: #e9b35f; margin: 0 0.25rem; }
         .subhead { font-size: 1rem; color: #4c6f8c; border-bottom: 2px dashed rgba(100,120,150,0.3); display: inline-block; padding-bottom: 6px; }
-        .filters { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-        .filter-btn, .tab-btn {
+        
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 60px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: #1e3a5f;
+            min-width: 60px;
+            text-align: center;
+        }
+        .filter-btn.active {
+            background: #1e3a5f;
+            color: white;
+        }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .tab-btn {
             background: rgba(255,255,255,0.6);
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.8);
@@ -39,8 +69,11 @@
             cursor: pointer;
             color: #1e3a5f;
         }
-        .filter-btn.active, .tab-btn.active { background: #1e3a5f; color: white; }
-        .tabs { display: flex; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .tab-btn.active {
+            background: #1e3a5f;
+            color: white;
+        }
+        
         .wishlist-grid {
             display: grid;
             grid-template-columns: repeat(3, minmax(280px, 1fr));
@@ -93,8 +126,7 @@
             color: white;
             padding: 6px 10px;
             border-radius: 40px;
-            font-size: 0.75rem;
-            font-weight: 600;
+            font-size: 0.8rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -104,8 +136,8 @@
             transition: 0.2s;
             min-width: 36px;
         }
-        .action-btn i { font-size: 0.85rem; }
-        .action-btn span { display: none; }  /* скрываем текст, оставляем только иконки */
+        .action-btn i { font-size: 0.9rem; }
+        .action-btn span { display: none; }
         .action-btn:hover { background: rgba(0,0,0,0.85); transform: scale(1.02); }
         .delete-btn:hover { background: #b91c1c; }
         
@@ -118,18 +150,18 @@
             color: white;
             padding: 6px 8px;
             border-radius: 40px;
-            font-size: 0.7rem;
+            font-size: 1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 4px;
             z-index: 20;
             border: none;
-            width: 90px;
-            white-space: nowrap;
+            width: 48px;
+            text-align: center;
         }
-        .owner-switch i { font-size: 0.8rem; }
+        .owner-switch i { display: none; }
         .owner-switch:hover { background: rgba(0,0,0,0.85); }
         
         .print-badge {
@@ -226,8 +258,10 @@
         .loading, .empty-message { text-align: center; padding: 2rem; color: #5e7c9c; }
 
         @media (max-width: 640px) {
-            .owner-switch { width: 80px; font-size: 0.65rem; padding: 4px 4px; }
-            .action-btn { padding: 4px 6px; }
+            .owner-switch { width: 42px; font-size: 0.9rem; padding: 4px; }
+            .action-btn { padding: 4px 8px; }
+            .filter-btn { font-size: 1rem; min-width: 50px; padding: 0.4rem 0.8rem; }
+            .tab-btn { font-size: 0.8rem; padding: 0.4rem 1rem; }
         }
     </style>
 </head>
@@ -238,10 +272,10 @@
         <div class="subhead">Управляйте желаниями, отмечайте исполненные</div>
     </div>
     <div class="filters">
-        <button class="filter-btn active" data-filter="all">👥 Все</button>
-        <button class="filter-btn" data-filter="me">👨 Мои</button>
-        <button class="filter-btn" data-filter="wife">👩 Жены</button>
-        <button class="filter-btn" data-filter="common">🤝 Общие</button>
+        <button class="filter-btn active" data-filter="all">👥</button>
+        <button class="filter-btn" data-filter="me">👨</button>
+        <button class="filter-btn" data-filter="wife">👩</button>
+        <button class="filter-btn" data-filter="common">🤝</button>
     </div>
     <div class="tabs">
         <button class="tab-btn active" data-tab="active">📌 Активные</button>
@@ -249,7 +283,7 @@
     </div>
     <div id="activeGrid" class="wishlist-grid"><div class="loading">⏳ Загрузка...</div></div>
     <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading">⏳ Загрузка...</div></div>
-    <div class="footer-note">🔹 Голубые — ваши, розовые — для жены, серые — общие. Нажмите на иконку 👤, чтобы сменить владельца.</div>
+    <div class="footer-note">🔹 Голубые — ваши, розовые — для жены, серые — общие. Нажмите на иконку справа, чтобы сменить владельца.</div>
 </div>
 
 <div id="editModal" class="modal">
@@ -368,10 +402,10 @@
         let priceText = String(item.price).trim();
         if (!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
 
-        let ownerText = '';
-        if (item.owner === 'me') ownerText = '👨 Моё';
-        else if (item.owner === 'wife') ownerText = '👩 Жене';
-        else ownerText = '🤝 Общее';
+        let ownerEmoji = '';
+        if (item.owner === 'me') ownerEmoji = '👨';
+        else if (item.owner === 'wife') ownerEmoji = '👩';
+        else ownerEmoji = '🤝';
 
         card.innerHTML = `
             <div class="card-actions">
@@ -379,7 +413,7 @@
                 <div class="action-btn edit-btn" title="Редактировать"><i class="fas fa-edit"></i><span>Изменить</span></div>
                 <div class="action-btn delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i><span>Удалить</span></div>
             </div>
-            <div class="owner-switch" title="Сменить владельца"><i class="fas fa-user-friends"></i> ${ownerText} 🔄</div>
+            <div class="owner-switch" title="Сменить владельца">${ownerEmoji} 🔄</div>
             <div class="print-badge"><i class="fas fa-print"></i> РАСПЕЧАТАТЬ!</div>
             ${imgHtml}
             <div class="card-content">
