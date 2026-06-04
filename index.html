@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вишлист — с перетаскиванием</title>
+    <title>Вишлист — с локальным перетаскиванием</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -268,7 +268,7 @@
 <div class="container">
     <div class="hero">
         <h1><i class="fas fa-star-of-life"></i> Список желаний <i class="fas fa-gift"></i></h1>
-        <div class="subhead">Перетаскивайте карточки — порядок сохраняется для всех</div>
+        <div class="subhead">Перетаскивайте карточки — порядок сохранится для вас</div>
     </div>
     <div class="filters">
         <button class="filter-btn active" data-filter="all">👥 Все</button>
@@ -320,6 +320,35 @@
         localStorage.setItem('wishlist_print_modes', JSON.stringify(printModeIds));
     }
 
+    // Функции для работы с порядком в localStorage
+    function getOrderKey() {
+        return currentTab === 'active' ? 'wishlist_order_active' : 'wishlist_order_completed';
+    }
+    function saveOrder(ids) {
+        localStorage.setItem(getOrderKey(), JSON.stringify(ids));
+    }
+    function loadOrder() {
+        const saved = localStorage.getItem(getOrderKey());
+        return saved ? JSON.parse(saved) : null;
+    }
+
+    // Сортировка элементов согласно сохранённому порядку
+    function sortByOrder(items, order) {
+        if (!order || order.length === 0) return items;
+        const map = new Map();
+        items.forEach(item => map.set(item.id, item));
+        const ordered = [];
+        for (let id of order) {
+            if (map.has(id)) {
+                ordered.push(map.get(id));
+                map.delete(id);
+            }
+        }
+        // добавляем оставшиеся (например, новые, которых нет в порядке) в конец
+        for (let item of map.values()) ordered.push(item);
+        return ordered;
+    }
+
     async function fetchData() {
         const resp = await fetch(API_URL);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -362,17 +391,6 @@
 
     async function setOwner(id, owner) {
         await fetch(`${API_URL}?setOwner=1&id=${id}&owner=${owner}`);
-        await loadAndRender();
-    }
-
-    async function updateOrder(containerId) {
-        const container = document.getElementById(containerId);
-        const cards = container.querySelectorAll('.card:not(.add-card)');
-        const orderData = Array.from(cards).map((card, idx) => ({
-            id: parseInt(card.dataset.id),
-            order: idx
-        }));
-        await fetch(`${API_URL}?updateOrder=1&orderData=${JSON.stringify(orderData)}`);
         await loadAndRender();
     }
 
@@ -469,6 +487,18 @@
         const activeItems = filtered.filter(i => !i.completed);
         const completedItems = filtered.filter(i => i.completed);
 
+        // Загружаем порядок из localStorage и сортируем
+        const orderActive = loadOrderActive ? loadOrderActive() : null;
+        const orderCompleted = loadOrderCompleted ? loadOrderCompleted() : null;
+        // Но loadOrder использует getOrderKey, который зависит от currentTab, поэтому определим отдельно
+        function loadOrderForTab(tab) {
+            const key = tab === 'active' ? 'wishlist_order_active' : 'wishlist_order_completed';
+            const saved = localStorage.getItem(key);
+            return saved ? JSON.parse(saved) : null;
+        }
+        const sortedActive = sortByOrder(activeItems, loadOrderForTab('active'));
+        const sortedCompleted = sortByOrder(completedItems, loadOrderForTab('completed'));
+
         activeContainer.innerHTML = '';
         completedContainer.innerHTML = '';
 
@@ -489,13 +519,13 @@
                 document.getElementById('editModal').style.display = 'flex';
             };
             activeContainer.appendChild(addCard);
-            activeItems.forEach(item => activeContainer.appendChild(createCardElement(item)));
-            if (activeItems.length === 0 && activeContainer.children.length === 1) {
+            sortedActive.forEach(item => activeContainer.appendChild(createCardElement(item)));
+            if (sortedActive.length === 0 && activeContainer.children.length === 1) {
                 activeContainer.innerHTML += '<div class="empty-message">📭 Нет активных желаний</div>';
             }
         } else {
-            completedItems.forEach(item => completedContainer.appendChild(createCardElement(item)));
-            if (completedItems.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
+            sortedCompleted.forEach(item => completedContainer.appendChild(createCardElement(item)));
+            if (sortedCompleted.length === 0) completedContainer.innerHTML = '<div class="empty-message">🎉 Здесь будут исполненные</div>';
         }
     }
 
@@ -504,21 +534,30 @@
             sortableInstances.forEach(s => s.destroy());
             sortableInstances = [];
         }
-        const activeGrid = document.getElementById('activeGrid');
-        const completedGrid = document.getElementById('completedGrid');
-        if (activeGrid) {
-            const sortable = new Sortable(activeGrid, {
+        const activeContainer = document.getElementById('activeGrid');
+        const completedContainer = document.getElementById('completedGrid');
+        if (activeContainer) {
+            const sortable = new Sortable(activeContainer, {
                 animation: 200,
                 handle: '.card:not(.add-card)',
-                onEnd: () => updateOrder('activeGrid')
+                onEnd: () => {
+                    // Сохраняем порядок ID карточек (исключая add-card)
+                    const cards = activeContainer.querySelectorAll('.card:not(.add-card)');
+                    const ids = Array.from(cards).map(card => parseInt(card.dataset.id));
+                    localStorage.setItem('wishlist_order_active', JSON.stringify(ids));
+                }
             });
             sortableInstances.push(sortable);
         }
-        if (completedGrid) {
-            const sortable = new Sortable(completedGrid, {
+        if (completedContainer) {
+            const sortable = new Sortable(completedContainer, {
                 animation: 200,
                 handle: '.card',
-                onEnd: () => updateOrder('completedGrid')
+                onEnd: () => {
+                    const cards = completedContainer.querySelectorAll('.card');
+                    const ids = Array.from(cards).map(card => parseInt(card.dataset.id));
+                    localStorage.setItem('wishlist_order_completed', JSON.stringify(ids));
+                }
             });
             sortableInstances.push(sortable);
         }
