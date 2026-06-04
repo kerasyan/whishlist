@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вишлист — стабильная версия</title>
+    <title>Вишлист — финал</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -84,6 +84,8 @@
             display: flex;
             gap: 8px;
             z-index: 20;
+            flex-wrap: wrap;
+            max-width: calc(100% - 140px); /* не залезаем на правую кнопку */
         }
         .action-btn {
             background: rgba(0,0,0,0.65);
@@ -99,6 +101,7 @@
             gap: 6px;
             border: none;
             transition: 0.2s;
+            white-space: nowrap;
         }
         .action-btn:hover { background: rgba(0,0,0,0.85); transform: scale(1.02); }
         .delete-btn:hover { background: #b91c1c; }
@@ -110,15 +113,19 @@
             background: rgba(0,0,0,0.65);
             backdrop-filter: blur(4px);
             color: white;
-            padding: 6px 12px;
+            padding: 6px 8px;
             border-radius: 40px;
             font-size: 0.75rem;
             cursor: pointer;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             z-index: 20;
             border: none;
+            width: 110px;          /* фиксированная ширина */
+            text-align: center;
+            white-space: nowrap;
         }
         .owner-switch:hover { background: rgba(0,0,0,0.85); }
         
@@ -214,6 +221,12 @@
         .close-btn { background: #ccc !important; margin-left: 8px; }
         .footer-note { text-align: center; margin-top: 2rem; font-size: 0.8rem; color: #5b6e86; }
         .loading, .empty-message { text-align: center; padding: 2rem; color: #5e7c9c; }
+
+        @media (max-width: 640px) {
+            .owner-switch { width: 95px; font-size: 0.7rem; padding: 4px 6px; }
+            .action-btn { padding: 4px 8px; font-size: 0.7rem; }
+            .card-actions { max-width: calc(100% - 110px); }
+        }
     </style>
 </head>
 <body>
@@ -257,7 +270,7 @@
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxBojr1YXovZxz-uqXA-jHfqtnnv5zyiqrIdHEIOvHBXhfnWtjC90WI93p2CWG2mv7N/exec'; // ЗАМЕНИТЕ НА СВОЙ URL
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxBojr1YXovZxz-uqXA-jHfqtnnv5zyiqrIdHEIOvHBXhfnWtjC90WI93p2CWG2mv7N/exec'; // ЗАМЕНИТЕ
     let allItems = [];
     let currentTab = 'active';
     let currentFilter = 'all';
@@ -353,13 +366,19 @@
         let priceText = String(item.price).trim();
         if (!priceText.includes('₽') && !priceText.includes('руб')) priceText += ' ₽';
 
+        // Формируем текст для кнопки владельца (короткий, фиксированной ширины)
+        let ownerText = '';
+        if (item.owner === 'me') ownerText = '👨 Моё';
+        else if (item.owner === 'wife') ownerText = '👩 Жене';
+        else ownerText = '🤝 Общее';
+
         card.innerHTML = `
             <div class="card-actions">
                 <div class="action-btn print-btn" title="Пометить на печать"><i class="fas fa-print"></i> <span>Распечатай</span></div>
                 <div class="action-btn edit-btn" title="Редактировать"><i class="fas fa-edit"></i> <span>Изменить</span></div>
                 <div class="action-btn delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i> <span>Удалить</span></div>
             </div>
-            <div class="owner-switch" title="Сменить владельца"><i class="fas fa-user-friends"></i> <span>${item.owner === 'me' ? 'Моё' : (item.owner === 'wife' ? 'Для жены' : 'Общее')}</span> 🔄</div>
+            <div class="owner-switch" title="Сменить владельца"><i class="fas fa-user-friends"></i> ${ownerText} 🔄</div>
             <div class="print-badge"><i class="fas fa-print"></i> РАСПЕЧАТАТЬ!</div>
             ${imgHtml}
             <div class="card-content">
