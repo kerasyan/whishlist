@@ -34,7 +34,6 @@
             padding-bottom: 6px;
         }
         
-        /* Фильтры */
         .filters {
             display: flex;
             justify-content: center;
@@ -85,7 +84,6 @@
         @media (max-width: 1000px) { .wishlist-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 640px) { .wishlist-grid { grid-template-columns: 1fr; } }
         
-        /* Карточки с цветами в зависимости от owner */
         .card {
             border-radius: 32px;
             overflow: hidden;
@@ -97,21 +95,9 @@
             position: relative;
         }
         .card:hover { transform: translateY(-8px) scale(1.01); }
-        /* Стили для owner me (голубая) */
-        .card.owner-me {
-            background: #e0f2fe;
-            border-color: #7ab3c8;
-        }
-        /* Стили для owner wife (розовая) */
-        .card.owner-wife {
-            background: #ffe4e6;
-            border-color: #e6a0b0;
-        }
-        /* Стили для owner common (нейтральная) */
-        .card.owner-common {
-            background: #f3f4f6;
-            border-color: #9ca3af;
-        }
+        .card.owner-me { background: #e0f2fe; border-color: #7ab3c8; }
+        .card.owner-wife { background: #ffe4e6; border-color: #e6a0b0; }
+        .card.owner-common { background: #f3f4f6; border-color: #9ca3af; }
         
         .card.completed { opacity: 0.7; filter: grayscale(0.1); }
         .card.completed .card-title, .card.completed .card-desc, .card.completed .price { text-decoration: line-through; }
@@ -130,7 +116,6 @@
         }
         .card.completed .completed-badge { display: inline-flex; }
         
-        /* Кнопки действий (редактировать, удалить, смена владельца) */
         .card-actions {
             position: absolute;
             top: 12px;
@@ -156,22 +141,6 @@
         .action-btn:hover { background: #ffe5b4; transform: scale(1.02); }
         .delete-btn:hover { background: #ffb3b3; }
         
-        /* Кнопка для переключения владельца */
-        .owner-toggle {
-            position: absolute;
-            bottom: 12px;
-            right: 12px;
-            background: rgba(255,255,240,0.9);
-            padding: 5px 8px;
-            border-radius: 30px;
-            font-size: 0.7rem;
-            cursor: pointer;
-            z-index: 10;
-            border: 1px solid #d4deec;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
         .print-badge {
             display: none;
             position: absolute;
@@ -306,7 +275,6 @@
         <div class="subhead"><i class="fas fa-check-circle"></i> отмечайте исполненное — оно перемещается</div>
     </div>
     
-    <!-- Фильтры по владельцу -->
     <div class="filters">
         <button class="filter-btn active" data-filter="all">👥 Все желания</button>
         <button class="filter-btn" data-filter="me">👨 Мои желания</button>
@@ -321,7 +289,7 @@
     
     <div id="activeGrid" class="wishlist-grid"><div class="loading">⏳ Загрузка...</div></div>
     <div id="completedGrid" class="wishlist-grid" style="display: none;"><div class="loading">⏳ Загрузка...</div></div>
-    <div class="footer-note">🔹 Голубые — ваши, розовые — для жены, серые — общие. Нажмите на иконку 👤, чтобы сменить владельца. Корзина — удалить.</div>
+    <div class="footer-note">🔹 Голубые — ваши, розовые — для жены, серые — общие. Кнопка 👤 в верхней панели меняет владельца.</div>
 </div>
 
 <div id="editModal" class="modal">
@@ -335,16 +303,16 @@
         <input type="text" id="editShopLink" placeholder="Ссылка на покупку">
         <input type="text" id="editButtonText" placeholder="Текст на кнопке" value="Купить">
         <select id="editOwner">
-            <option value="me">👨 Моё желание</option>
-            <option value="wife">👩 Желание жены</option>
             <option value="common">🤝 Общее</option>
+            <option value="me">👨 Моё</option>
+            <option value="wife">👩 Жены</option>
         </select>
         <div><button id="saveEditBtn">💾 Сохранить</button><button id="closeEditBtn" class="close-btn">Отмена</button></div>
     </div>
 </div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbw9Zp68GnVnqLcL8LWvS_vASitmCtBT868zzmDOqYWzNbAofPCg1tm6nIdPMnnbkIiz/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxDq_R3h5pjjPAwQNTABHxg57YBy-fAIyfemA5mmMNpofAJWC0WmQ698Ne4qkIXUww1/exec';
     let allItems = [];
     let currentTab = 'active';
     let currentFilter = 'all';
@@ -411,7 +379,7 @@
         document.getElementById('editImageUrl').value = item.imageUrl || '';
         document.getElementById('editShopLink').value = item.shopLink || '';
         document.getElementById('editButtonText').value = item.buttonText || 'Купить';
-        document.getElementById('editOwner').value = item.owner || 'me';
+        document.getElementById('editOwner').value = item.owner || 'common';
         document.getElementById('modalTitle').innerText = '✏️ Редактировать хотелку';
         document.getElementById('editModal').style.display = 'flex';
     }
@@ -420,7 +388,7 @@
         const activeContainer = document.getElementById('activeGrid');
         const completedContainer = document.getElementById('completedGrid');
         let filtered = items;
-        if(currentFilter !== 'all') filtered = items.filter(i => i.owner === currentFilter);
+        if(currentFilter !== 'all') filtered = items.filter(i => (i.owner || 'common') === currentFilter);
         const activeItems = filtered.filter(i => !i.completed);
         const completedItems = filtered.filter(i => i.completed);
         
@@ -439,7 +407,7 @@
                 document.getElementById('editImageUrl').value = '';
                 document.getElementById('editShopLink').value = '';
                 document.getElementById('editButtonText').value = 'Купить';
-                document.getElementById('editOwner').value = 'me';
+                document.getElementById('editOwner').value = 'common';
                 document.getElementById('modalTitle').innerText = '➕ Новая хотелка';
                 document.getElementById('editModal').style.display = 'flex';
             };
@@ -453,8 +421,9 @@
     }
     
     function createCardElement(item) {
+        const owner = item.owner || 'common';
         const card = document.createElement('div');
-        card.className = `card owner-${item.owner || 'me'}`;
+        card.className = `card owner-${owner}`;
         if(item.completed) card.classList.add('completed');
         if(printModeIds.includes(item.id)) card.classList.add('print-mode');
         
@@ -467,10 +436,10 @@
         card.innerHTML = `
             <div class="card-actions">
                 <div class="action-btn print-btn" title="Пометить на печать"><i class="fas fa-print"></i></div>
+                <div class="action-btn owner-switch" title="Сменить владельца"><i class="fas fa-user-friends"></i> <span>${owner === 'me' ? 'Моё' : (owner === 'wife' ? 'Жены' : 'Общее')}</span></div>
                 <div class="action-btn edit-btn" title="Редактировать"><i class="fas fa-edit"></i></div>
                 <div class="action-btn delete-btn" title="Удалить"><i class="fas fa-trash-alt"></i></div>
             </div>
-            <div class="owner-toggle" title="Сменить владельца"><i class="fas fa-user-friends"></i> <span>${item.owner === 'me' ? 'Моё' : (item.owner === 'wife' ? 'Для жены' : 'Общее')}</span></div>
             <div class="print-badge"><i class="fas fa-print"></i> РАСПЕЧАТАТЬ!</div>
             ${imgHtml}
             <div class="card-content">
@@ -496,13 +465,13 @@
         card.querySelector('.print-btn').onclick = (e) => { e.stopPropagation(); togglePrintMode(card, item.id); };
         card.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); openEditModal(item); };
         card.querySelector('.delete-btn').onclick = async (e) => { e.stopPropagation(); await deleteWish(item.id); };
-        const ownerToggle = card.querySelector('.owner-toggle');
-        ownerToggle.onclick = async (e) => {
+        const ownerSwitch = card.querySelector('.owner-switch');
+        ownerSwitch.onclick = async (e) => {
             e.stopPropagation();
-            let newOwner = 'me';
-            if(item.owner === 'me') newOwner = 'wife';
-            else if(item.owner === 'wife') newOwner = 'common';
-            else newOwner = 'me';
+            let newOwner = 'common';
+            if(owner === 'common') newOwner = 'me';
+            else if(owner === 'me') newOwner = 'wife';
+            else if(owner === 'wife') newOwner = 'common';
             await setOwner(item.id, newOwner);
         };
         return card;
@@ -520,7 +489,6 @@
     
     function escapeHtml(str) { return String(str).replace(/[&<>]/g, m => m==='&'?'&amp;':(m==='<'?'&lt;':'&gt;')); }
     
-    // Модальное окно
     const modal = document.getElementById('editModal');
     document.getElementById('closeEditBtn').onclick = () => modal.style.display = 'none';
     window.onclick = (e) => { if(e.target === modal) modal.style.display = 'none'; };
@@ -544,7 +512,6 @@
         else alert('Ошибка');
     };
     
-    // Фильтры
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -554,7 +521,6 @@
         });
     });
     
-    // Табы
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             if(currentTab === btn.dataset.tab) return;
